@@ -5,11 +5,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="authBg">
       <div className="authTop">
-        <Link href="/" className="authBrand">
+        <Link href="/" className="brand" style={{ gap: 10 }}>
           <Image src="/logo.png" alt="PathauNow" width={42} height={42} priority />
           <div>
-            <div className="authBrandTitle">PathauNow</div>
-            <div className="authBrandSub">Track parcels. Deliver with trust.</div>
+            <div className="brandTitle">PathauNow</div>
+            <div className="brandSub">Secure portal</div>
           </div>
         </Link>
       </div>

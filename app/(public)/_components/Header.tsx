@@ -13,10 +13,10 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <nav className="nav">
           <Link className="btn btnGhost" href="/about">About</Link>
           <Link className="btn" href="/login">Login</Link>
-          <Link className="btn btnPrimary" href="/register">Get Started</Link>
+          <Link className="btn btnPrimary" href="/register">Sign up</Link>
         </nav>
       </div>
     </header>
