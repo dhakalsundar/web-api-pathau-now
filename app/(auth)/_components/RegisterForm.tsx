@@ -59,13 +59,13 @@ export default function RegisterForm() {
 
       <div className="field">
         <label>Password</label>
-        <input type="password" placeholder="••••••••" {...register("password")} />
+        <input type="password" placeholder="    " {...register("password")} />
         {errors.password && <span className="error">{errors.password.message}</span>}
       </div>
 
       <div className="field">
         <label>Confirm Password</label>
-        <input type="password" placeholder="••••••••" {...register("confirmPassword")} />
+        <input type="password" placeholder="    " {...register("confirmPassword")} />
         {errors.confirmPassword && (
           <span className="error">{errors.confirmPassword.message}</span>
         )}

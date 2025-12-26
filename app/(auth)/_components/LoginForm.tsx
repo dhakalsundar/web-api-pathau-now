@@ -32,7 +32,7 @@ export default function LoginForm() {
 
       <div className="field">
         <label>Email</label>
-        <input type="email" placeholder="you@email.com" {...register("email")} />
+        <input type="email" placeholder="   " {...register("email")} />
         {errors.email && <span className="error">{errors.email.message}</span>}
       </div>
 
