@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 type User = { fullName?: string; email?: string; phone?: string } | null;
 
@@ -14,7 +14,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const token = localStorage.getItem("pathaunow_token");
     if (!token) {
-      router.replace("/login");
+      router.replace("/login"); // ✅ protected
       return;
     }
     const u = localStorage.getItem("pathaunow_user");
@@ -28,47 +28,73 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="pageCenter">
-      <div className="cardWide">
-        <div className="space">
-          <div className="row">
-            <Image src="/logo.png" alt="PathauNow Logo" width={54} height={54} priority />
+    <div style={dashWrap}>
+      <div style={dashCard}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Image src="/logo.png" alt="PathauNow" width={44} height={44} priority />
             <div>
-              <h1 className="h1">Dashboard</h1>
-              <p className="muted" style={{ margin: 0 }}>
-                Dummy dashboard (Sprint 1)
-              </p>
+              <div style={{ fontWeight: 900, fontSize: 20 }}>Dashboard</div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>Welcome to PathauNow</div>
             </div>
           </div>
 
-          <button className="btnSecondary" onClick={logout}>Logout</button>
+          <button onClick={logout} style={btnOutline}>Logout</button>
         </div>
 
-        <hr className="hr" />
-
-        <div className="grid2">
-          <div className="mini">
-            <h2 className="h2">User Profile</h2>
-            <p className="muted"><b>Name:</b> {user?.fullName ?? "N/A"}</p>
-            <p className="muted"><b>Email:</b> {user?.email ?? "N/A"}</p>
-            <p className="muted"><b>Phone:</b> {user?.phone ?? "N/A"}</p>
-          </div>
-
-          <div className="mini">
-            <h2 className="h2">Quick Actions</h2>
-            <p className="muted">Tracking feature will be added in Sprint 2.</p>
-
-            <div className="btnRow">
-              <Link className="btnGhost" href="/">Go Home</Link>
-              <Link className="btnSecondary" href="/about">About</Link>
-            </div>
-          </div>
+        <div style={{ marginTop: 14, padding: 14, borderRadius: 16, border: "1px solid #e6e8ee" }}>
+          <div style={{ fontWeight: 900, marginBottom: 6 }}>Your Profile</div>
+          <div style={{ color: "#475569" }}><b>Name:</b> {user?.fullName ?? "N/A"}</div>
+          <div style={{ color: "#475569" }}><b>Email:</b> {user?.email ?? "N/A"}</div>
+          <div style={{ color: "#475569" }}><b>Phone:</b> {user?.phone ?? "N/A"}</div>
         </div>
 
-        <p className="small" style={{ marginTop: 14 }}>
-          Sprint 1 uses localStorage to simulate login. In Sprint 2 you will connect real Web API login/register.
-        </p>
+        <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+          <button disabled style={btnDisabled}>Track Parcel (Coming Soon)</button>
+          <button disabled style={btnDisabled}>Create Shipment (Coming Soon)</button>
+        </div>
+
+        <div style={{ marginTop: 12, textAlign: "center" }}>
+          <Link href="/" style={{ fontSize: 13, opacity: 0.75 }}>← Back to Home</Link>
+        </div>
       </div>
     </div>
   );
 }
+
+const dashWrap: React.CSSProperties = {
+  minHeight: "100vh",
+  display: "grid",
+  placeItems: "center",
+  padding: 18,
+  background: "linear-gradient(180deg, #fbfbfe, #f4f6fb)",
+};
+
+const dashCard: React.CSSProperties = {
+  width: "100%",
+  maxWidth: 520,
+  borderRadius: 22,
+  border: "1px solid #e6e8ee",
+  background: "#fff",
+  padding: 18,
+  boxShadow: "0 18px 45px rgba(2,6,23,.10)",
+};
+
+const btnOutline: React.CSSProperties = {
+  padding: "10px 12px",
+  borderRadius: 14,
+  border: "1px solid #e6e8ee",
+  background: "#fff",
+  fontWeight: 900,
+  cursor: "pointer",
+};
+
+const btnDisabled: React.CSSProperties = {
+  padding: "12px 12px",
+  borderRadius: 14,
+  border: "1px solid #e6e8ee",
+  background: "#f8fafc",
+  fontWeight: 900,
+  opacity: 0.7,
+  cursor: "not-allowed",
+};
