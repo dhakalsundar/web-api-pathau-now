@@ -38,7 +38,7 @@ export default function LoginForm() {
 
       <div className="field">
         <label>Password</label>
-        <input type="password" placeholder="••••••••" {...register("password")} />
+        <input type="password" placeholder="    " {...register("password")} />
         {errors.password && <span className="error">{errors.password.message}</span>}
       </div>
 
