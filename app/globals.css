@@ -1,26 +1,160 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+:root{
+  --bg1:#0b1220;
+  --bg2:#101a33;
+  --card:rgba(255,255,255,.08);
+  --card2:rgba(255,255,255,.04);
+  --stroke:rgba(255,255,255,.14);
+  --text:#eef2ff;
+  --muted:#b6c2e2;
+  --brand:#f57c00;
+  --brand2:#ffb74d;
+  --shadow: 0 18px 60px rgba(0,0,0,.45);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color:var(--text);
+  background:
+    radial-gradient(900px 520px at 20% 10%, rgba(245,124,0,.22), transparent 60%),
+    radial-gradient(850px 480px at 80% 0%, rgba(76,110,245,.18), transparent 55%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+a{ color:inherit; text-decoration:none; }
+a:hover{ opacity:.95; }
+
+.container{
+  width:100%;
+  max-width:1050px;
+  margin:0 auto;
+  padding:18px;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.pageCenter{
+  min-height: calc(100vh - 70px);
+  display:grid;
+  place-items:center;
+  padding:18px;
+}
+
+.card{
+  width:100%;
+  max-width:460px;
+  border:1px solid var(--stroke);
+  border-radius:20px;
+  background: linear-gradient(180deg, var(--card), var(--card2));
+  box-shadow: var(--shadow);
+  padding:18px;
+}
+
+.cardWide{
+  width:100%;
+  max-width:900px;
+  border:1px solid var(--stroke);
+  border-radius:22px;
+  background: linear-gradient(180deg, var(--card), var(--card2));
+  box-shadow: var(--shadow);
+  padding:18px;
+}
+
+.h1{ margin:0; font-size:28px; letter-spacing:.2px; }
+.h2{ margin:0; font-size:18px; }
+
+.muted{ color:var(--muted); margin:6px 0 0; line-height:1.5; }
+.small{ font-size:12px; color:var(--muted); }
+
+.row{ display:flex; align-items:center; gap:12px; }
+.space{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid var(--stroke);
+  border-radius:999px;
+  background: rgba(0,0,0,.18);
+  font-size:12px;
+  color: var(--muted);
+}
+
+.btnRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
+.btn{
+  display:inline-grid;
+  place-items:center;
+  padding:11px 14px;
+  border-radius:14px;
+  border:1px solid rgba(0,0,0,.25);
+  background: linear-gradient(180deg, var(--brand2), var(--brand));
+  color:#0b1220;
+  font-weight:800;
+  cursor:pointer;
+  transition: transform .08s ease;
+}
+.btn:active{ transform: translateY(1px); }
+
+.btnSecondary{
+  display:inline-grid;
+  place-items:center;
+  padding:11px 14px;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-weight:800;
+  cursor:pointer;
+}
+.btnGhost{
+  display:inline-grid;
+  place-items:center;
+  padding:11px 14px;
+  border-radius:14px;
+  border:1px dashed rgba(255,255,255,.28);
+  background: transparent;
+  color: var(--text);
+  font-weight:800;
+  cursor:pointer;
+}
+
+.field{ margin-top:14px; display:grid; gap:6px; }
+label{ font-size:13px; color:var(--muted); }
+
+input{
+  width:100%;
+  padding:11px 12px;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  outline:none;
+  background: rgba(0,0,0,.22);
+  color: var(--text);
+}
+input:focus{ border-color: rgba(245,124,0,.65); }
+
+.error{ color:#ffb4b4; font-size:12px; margin-top:2px; }
+
+.grid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+  margin-top:14px;
+}
+@media (max-width:720px){
+  .grid2{ grid-template-columns: 1fr; }
+}
+
+.mini{
+  border:1px solid var(--stroke);
+  border-radius:18px;
+  padding:14px;
+  background: rgba(0,0,0,.16);
+}
+.hr{
+  height:1px;
+  background: rgba(255,255,255,.12);
+  margin:14px 0;
+  border:0;
 }

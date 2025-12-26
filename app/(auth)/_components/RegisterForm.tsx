@@ -13,70 +13,63 @@ export default function RegisterForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      fullName: "",
-      email: "",
-      phone: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
+  } = useForm<RegisterValues>({ resolver: zodResolver(registerSchema) });
 
   async function onSubmit(values: RegisterValues) {
+    // Sprint 1: dummy register
     localStorage.setItem("pathaunow_token", "dummy-token");
     localStorage.setItem(
       "pathaunow_user",
       JSON.stringify({ fullName: values.fullName, email: values.email, phone: values.phone })
     );
-
     router.push("/auth/dashboard");
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="card">
-      <h1 className="h1">Register</h1>
-      <p className="muted">Create your PathauNow account</p>
+      <div className="badge">Register • Sprint 1</div>
+      <h1 className="h1" style={{ marginTop: 10 }}>Create Account</h1>
+      <p className="muted">Join PathauNow and start tracking parcels.</p>
 
       <div className="field">
         <label>Full Name</label>
-        <input placeholder=" " {...register("fullName")} />
-        {errors.fullName && <span className="error">{errors.fullName.message}</span>}
+        <input placeholder="    " {...register("fullName")} />
+        {errors.fullName && <div className="error">{errors.fullName.message}</div>}
       </div>
 
       <div className="field">
         <label>Email</label>
         <input type="email" placeholder="   " {...register("email")} />
-        {errors.email && <span className="error">{errors.email.message}</span>}
+        {errors.email && <div className="error">{errors.email.message}</div>}
       </div>
 
       <div className="field">
         <label>Phone</label>
         <input placeholder="    " {...register("phone")} />
-        {errors.phone && <span className="error">{errors.phone.message}</span>}
+        {errors.phone && <div className="error">{errors.phone.message}</div>}
       </div>
 
-      <div className="field">
-        <label>Password</label>
-        <input type="password" placeholder="    " {...register("password")} />
-        {errors.password && <span className="error">{errors.password.message}</span>}
+      <div className="grid2">
+        <div className="field" style={{ marginTop: 0 }}>
+          <label>Password</label>
+          <input type="password" placeholder="  " {...register("password")} />
+          {errors.password && <div className="error">{errors.password.message}</div>}
+        </div>
+
+        <div className="field" style={{ marginTop: 0 }}>
+          <label>Confirm</label>
+          <input type="password" placeholder="  " {...register("confirmPassword")} />
+          {errors.confirmPassword && <div className="error">{errors.confirmPassword.message}</div>}
+        </div>
       </div>
 
-      <div className="field">
-        <label>Confirm Password</label>
-        <input type="password" placeholder="    " {...register("confirmPassword")} />
-        {errors.confirmPassword && (
-          <span className="error">{errors.confirmPassword.message}</span>
-        )}
-      </div>
-
-      <button className="btn" disabled={isSubmitting}>
+      <button className="btn" disabled={isSubmitting} style={{ width: "100%", marginTop: 16 }}>
         {isSubmitting ? "Creating..." : "Create Account"}
       </button>
 
-      <p className="muted">
-        Already have an account? <Link className="link" href="/login">Login</Link>
+      <p className="muted" style={{ marginTop: 12 }}>
+        Already have an account?{" "}
+        <Link href="/login" style={{ textDecoration: "underline" }}>Login</Link>
       </p>
     </form>
   );
