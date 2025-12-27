@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -103,6 +104,7 @@ export default function RegisterForm() {
           <div className="authPoint">📊 Dashboard ready for shipment history</div>
         </div>
       </div>
+      
 
       <div className="authFooterLink">
         Already have an account? <Link href="/login">Login</Link>
