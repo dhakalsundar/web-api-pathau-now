@@ -27,7 +27,7 @@ export default function RegisterForm() {
       "pathaunow_user",
       JSON.stringify({ fullName: values.fullName, email: values.email, phone: values.phone })
     );
-    router.push("/auth/dashboard");
+    router.push("/login");
   }
 
   return (
