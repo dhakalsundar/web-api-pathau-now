@@ -6,6 +6,7 @@ export async function registerUser(payload: any) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+  
   const data = await res.json();
   if (!res.ok) throw data;
   return data;
