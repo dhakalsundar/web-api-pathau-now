@@ -5,8 +5,6 @@ export async function registerUser(payload: any) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-
-    //kk
   });
   const data = await res.json();
   if (!res.ok) throw data;
