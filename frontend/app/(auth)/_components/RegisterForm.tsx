@@ -1,17 +1,20 @@
-
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterValues } from "../schema";
+import { handleRegister } from "@/lib/actions/auth-action";
 
 export default function RegisterForm() {
   const router = useRouter();
+
   const [show1, setShow1] = useState(false);
   const [show2, setShow2] = useState(false);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const {
     register,
@@ -22,12 +25,18 @@ export default function RegisterForm() {
   });
 
   async function onSubmit(values: RegisterValues) {
-    localStorage.setItem("pathaunow_token", "dummy-token");
-    localStorage.setItem(
-      "pathaunow_user",
-      JSON.stringify({ fullName: values.fullName, email: values.email, phone: values.phone })
-    );
-    router.push("/login");
+    setError("");
+
+    const result = await handleRegister(values);
+
+    if (!result.success) {
+      setError(result.message || "Registration failed");
+      return;
+    }
+
+    startTransition(() => {
+      router.push("/login");
+    });
   }
 
   return (
@@ -38,10 +47,18 @@ export default function RegisterForm() {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
+        {error && <div className="error">{error}</div>}
+
         <div className="field">
-          <label>Full Name</label>
-          <input placeholder="Sundar Dhakal" {...register("fullName")} />
-          {errors.fullName && <div className="error">{errors.fullName.message}</div>}
+          <label>First Name</label>
+          <input placeholder="Sundar" {...register("firstName")} />
+          {errors.firstName && <div className="error">{errors.firstName.message}</div>}
+        </div>
+
+        <div className="field">
+          <label>Last Name</label>
+          <input placeholder="Dhakal" {...register("lastName")} />
+          {errors.lastName && <div className="error">{errors.lastName.message}</div>}
         </div>
 
         <div className="field">
@@ -52,20 +69,19 @@ export default function RegisterForm() {
 
         <div className="field">
           <label>Phone</label>
-          <input placeholder="98XXXXXXXX" {...register("phone")} />
-          {errors.phone && <div className="error">{errors.phone.message}</div>}
+          <input placeholder="98XXXXXXXX" {...register("phoneNumber")} />
+          {errors.phoneNumber && <div className="error">{errors.phoneNumber.message}</div>}
         </div>
 
         <div className="field">
           <label>Password</label>
           <div className="inputRow">
             <input
-              style={{ flex: 1 }}
               type={show1 ? "text" : "password"}
               placeholder="••••••••"
               {...register("password")}
             />
-            <button type="button" className="showBtn" onClick={() => setShow1((s) => !s)}>
+            <button type="button" onClick={() => setShow1(!show1)}>
               {show1 ? "Hide" : "Show"}
             </button>
           </div>
@@ -76,40 +92,26 @@ export default function RegisterForm() {
           <label>Confirm Password</label>
           <div className="inputRow">
             <input
-              style={{ flex: 1 }}
               type={show2 ? "text" : "password"}
               placeholder="••••••••"
               {...register("confirmPassword")}
             />
-            <button type="button" className="showBtn" onClick={() => setShow2((s) => !s)}>
+            <button type="button" onClick={() => setShow2(!show2)}>
               {show2 ? "Hide" : "Show"}
             </button>
           </div>
           {errors.confirmPassword && <div className="error">{errors.confirmPassword.message}</div>}
         </div>
 
-        <button className="btn btnPrimary" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Create Account"}
+        <button className="btn btnPrimary" type="submit" disabled={isSubmitting || isPending}>
+          {isSubmitting || isPending ? "Creating..." : "Create Account"}
         </button>
       </form>
-
-      <div className="authInfo">
-        <div className="authInfoTitle">What you get with PathauNow</div>
-        <p className="authInfoText">
-          A user-friendly tracking experience with clear progress and dashboard access.
-        </p>
-        <div className="authPoints">
-          <div className="authPoint">🕒 Track parcels anytime</div>
-          <div className="authPoint">📍 Clear delivery stages</div>
-          <div className="authPoint">📊 Dashboard ready for shipment history</div>
-        </div>
-      </div>
-      
 
       <div className="authFooterLink">
         Already have an account? <Link href="/login">Login</Link>
         <br />
-        <Link href="/" style={{ textDecoration: "none", color: "var(--muted)" }}>
+        <Link href="/" style={{ color: "var(--muted)" }}>
           ← Back to Home
         </Link>
       </div>
