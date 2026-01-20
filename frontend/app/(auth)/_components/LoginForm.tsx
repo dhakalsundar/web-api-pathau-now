@@ -34,8 +34,9 @@ export default function LoginForm() {
     }
 
     setAuthCookies(result.token, result.data);
-
     router.push("/auth/dashboard");
+    
+
   }
 
   return (

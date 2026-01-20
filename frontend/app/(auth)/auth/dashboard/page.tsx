@@ -81,7 +81,7 @@ export default function DashboardPage() {
             <Image src="/logo.png" alt="PathauNow" width={38} height={38} priority />
             <div>
               <div className="brandTitle">PathauNow Dashboard</div>
-              <div className="brandSub">Parcel & Courier Tracking • Web API Connected</div>
+              <div className="brandSub">Parcel & Courier Tracking</div>
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export default function DashboardPage() {
                   <span className="kpiLabel">Auth</span>
                 </div>
                 <div className="kpiValue">Connected</div>
-                <div className="kpiHint">Register • Login • Token</div>
+                <div className="kpiHint">Register</div>
               </div>
 
               <div className="kpiCard">
