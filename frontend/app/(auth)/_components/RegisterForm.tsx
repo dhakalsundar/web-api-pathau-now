@@ -27,19 +27,16 @@ export default function RegisterForm() {
   async function onSubmit(values: RegisterValues) {
     setError("");
 
-    try {
-      const result = await handleRegister(values);
+    const result = await handleRegister(values);
 
-      if (!result.success) {
-       console.log(result.message);
-      }
-
-      startTransition(() => {
-        router.push("/login");
-      });
-    } catch (e: any) {
-      setError(e.message || "Something went wrong");
+    if (!result.success) {
+      setError(result.message || "Registration failed");
+      return;
     }
+
+    startTransition(() => {
+      router.push("/login");
+    });
   }
 
   return (
@@ -73,9 +70,7 @@ export default function RegisterForm() {
         <div className="field">
           <label>Phone</label>
           <input placeholder="98XXXXXXXX" {...register("phoneNumber")} />
-          {errors.phoneNumber && (
-            <div className="error">{errors.phoneNumber.message}</div>
-          )}
+          {errors.phoneNumber && <div className="error">{errors.phoneNumber.message}</div>}
         </div>
 
         <div className="field">
@@ -105,16 +100,10 @@ export default function RegisterForm() {
               {show2 ? "Hide" : "Show"}
             </button>
           </div>
-          {errors.confirmPassword && (
-            <div className="error">{errors.confirmPassword.message}</div>
-          )}
+          {errors.confirmPassword && <div className="error">{errors.confirmPassword.message}</div>}
         </div>
 
-        <button
-          className="btn btnPrimary"
-          type="submit"
-          disabled={isSubmitting || isPending}
-        >
+        <button className="btn btnPrimary" type="submit" disabled={isSubmitting || isPending}>
           {isSubmitting || isPending ? "Creating..." : "Create Account"}
         </button>
       </form>

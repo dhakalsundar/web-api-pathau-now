@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -7,10 +6,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginValues } from "../schema";
+import { handleLogin } from "@/lib/actions/auth-action";
+import { setAuthCookies } from "@/lib/cookies";
+
 
 export default function LoginForm() {
   const router = useRouter();
   const [show, setShow] = useState(false);
+  const [error, setError] = useState("");
 
   const {
     register,
@@ -21,8 +24,17 @@ export default function LoginForm() {
   });
 
   async function onSubmit(values: LoginValues) {
-    localStorage.setItem("pathaunow_token", "dummy-token");
-    localStorage.setItem("pathaunow_user", JSON.stringify({ email: values.email }));
+    setError("");
+
+    const result = await handleLogin(values);
+
+    if (!result.success) {
+      setError(result.message || "Login failed");
+      return;
+    }
+
+    setAuthCookies(result.token, result.data);
+
     router.push("/auth/dashboard");
   }
 
@@ -34,6 +46,8 @@ export default function LoginForm() {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
+        {error && <div className="error">{error}</div>}
+
         <div className="field">
           <label>Email</label>
           <input type="email" placeholder="you@email.com" {...register("email")} />
