@@ -1,0 +1,7 @@
+"use client";
+
+import CreateUserPage from '@/app/(auth)/admin/users/create/page';
+
+export default function Wrapper(){
+  return <CreateUserPage />;
+}
