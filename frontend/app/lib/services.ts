@@ -21,13 +21,26 @@ export const authService = {
     return response.data;
   },
 
-  updateProfile: async (data: any) => {
-    const response = await api.put('/auth/profile', data);
+  updateProfile: async (userId: string, data: any) => {
+    const response = await api.put(`/auth/${userId}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
   updatePassword: async (currentPassword: string, newPassword: string) => {
     const response = await api.put('/auth/password', { currentPassword, newPassword });
+    return response.data;
+  },
+
+  createUserByAdmin: async (data: any) => {
+    const response = await api.post('/auth/user', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 };
@@ -156,12 +169,19 @@ export const riderService = {
 // Admin Service
 export const adminService = {
   createUser: async (data: any) => {
-    const response = await api.post('/admin/users', data);
+    const response = await api.post('/admin/users', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
-  getAllUsers: async (page = 1, limit = 10, role?: string) => {
-    const response = await api.get('/admin/users', { params: { page, limit, role } });
+  getAllUsers: async (options: any = {}) => {
+    const { page = 1, limit = 10, role, search } = options;
+    const response = await api.get('/admin/users', { 
+      params: { page, limit, role, search } 
+    });
     return response.data;
   },
 
@@ -176,7 +196,11 @@ export const adminService = {
   },
 
   updateUser: async (id: string, data: any) => {
-    const response = await api.put(`/admin/users/${id}`, data);
+    const response = await api.put(`/admin/users/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
