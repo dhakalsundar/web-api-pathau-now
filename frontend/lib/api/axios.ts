@@ -2,8 +2,8 @@ import axios from "axios";
 import { clearAuthCookies, readAuthFromCookies } from "../cookies";
 
 
-const API_HOST = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5050";
-const BASE_URL = `${API_HOST}/api`;
+const API_HOST = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const BASE_URL = `${API_HOST}/api`; 
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
