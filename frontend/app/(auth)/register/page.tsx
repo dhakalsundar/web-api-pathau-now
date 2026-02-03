@@ -200,4 +200,4 @@ export default function RegisterPage() {
         </div>
       </footer>
     </main>
-  );
+  )};

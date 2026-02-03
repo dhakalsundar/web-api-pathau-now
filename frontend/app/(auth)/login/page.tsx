@@ -125,4 +125,5 @@ export default function LoginPage() {
         </div>
       </footer>
     </main>
-  );
+  )
+};

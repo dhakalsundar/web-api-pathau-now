@@ -1,7 +1,0 @@
-"use client";
-
-import AdminUsersPage from '@/app/(auth)/admin/users/page';
-
-export default function AdminUsersWrapper(){
-  return <AdminUsersPage />;
-}

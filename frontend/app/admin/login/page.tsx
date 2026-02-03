@@ -14,7 +14,6 @@ export default function AdminLoginPage() {
             </div>
           </div>
         </div>
-
         <div>
           <div className="heroCard" style={{ textAlign: "center" }}>
             <Image src="/file.svg" alt="Shipments" width={220} height={140} priority />
