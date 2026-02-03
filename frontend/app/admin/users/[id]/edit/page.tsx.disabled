@@ -1,7 +1,0 @@
-"use client";
-
-import UserEditPage from '@/app/(auth)/admin/users/[id]/edit/page';
-
-export default function Wrapper({ params }: { params: { id: string } }){
-  return <UserEditPage params={params} />;
-}

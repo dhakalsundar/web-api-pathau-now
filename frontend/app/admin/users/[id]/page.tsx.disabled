@@ -1,7 +1,0 @@
-"use client";
-
-import UserViewPage from '@/app/(auth)/admin/users/[id]/page';
-
-export default function Wrapper({ params }: { params: { id: string } }){
-  return <UserViewPage params={params} />;
-}
