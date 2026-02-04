@@ -10,6 +10,7 @@ const axiosInstance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+
 axiosInstance.interceptors.request.use((config) => {
   const { token } = readAuthFromCookies();
 
@@ -17,6 +18,7 @@ axiosInstance.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
 
   return config;
 });
