@@ -1,6 +1,6 @@
 # 📚 PathauNow - Documentation Index & Roadmap
 
-## 🎯 Quick Navigation
+##  Quick Navigation
 
 ### 📖 Start Here
 1. **[QUICK_START.md](./QUICK_START.md)** - 60-second setup guide
