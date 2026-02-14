@@ -1,5 +1,7 @@
 'use client';
 
+import { TableRowSkeleton } from './Skeletons/SkeletonLoader';
+
 interface DataTableProps {
   columns: { key: string; label: string; width?: string }[];
   data: any[];
@@ -35,8 +37,12 @@ export default function DataTable({
   return (
     <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
       {isLoading ? (
-        <div className="p-8 text-center text-gray-500">
-          <p>Loading...</p>
+        <div className="divide-y divide-gray-200">
+          {Array(5)
+            .fill(0)
+            .map((_, i) => (
+              <TableRowSkeleton key={i} columnCount={columns.length + (actions.length > 0 ? 1 : 0)} />
+            ))}
         </div>
       ) : data && data.length > 0 ? (
         <table className="w-full">

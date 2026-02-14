@@ -1,6 +1,7 @@
 "use client";
 
 export const COOKIE_TOKEN = "pathaunow_token";
+export const COOKIE_REFRESH_TOKEN = "pathaunow_refresh_token";
 export const COOKIE_USER = "pathaunow_user";
 
 function setCookie(name: string, value: string, days = 7) {
@@ -26,13 +27,15 @@ function deleteCookie(name: string) {
   document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
 }
 
-export function setAuthCookies(token: string, user: any) {
-  setCookie(COOKIE_TOKEN, token);
-  setCookie(COOKIE_USER, JSON.stringify(user));
+export function setAuthCookies(token: string, refreshToken: string, user: any) {
+  setCookie(COOKIE_TOKEN, token, 1); // Access token: 1 day (15 min expiry in token itself)
+  setCookie(COOKIE_REFRESH_TOKEN, refreshToken, 7); // Refresh token: 7 days
+  setCookie(COOKIE_USER, JSON.stringify(user), 7);
 }
 
 export function readAuthFromCookies() {
   const token = getCookie(COOKIE_TOKEN);
+  const refreshToken = getCookie(COOKIE_REFRESH_TOKEN);
   const userRaw = getCookie(COOKIE_USER);
 
   let user: any = null;
@@ -42,10 +45,15 @@ export function readAuthFromCookies() {
     user = null;
   }
 
-  return { token, user };
+  return { token, refreshToken, user };
+}
+
+export function updateAccessToken(token: string) {
+  setCookie(COOKIE_TOKEN, token, 1);
 }
 
 export function clearAuthCookies() {
   deleteCookie(COOKIE_TOKEN);
+  deleteCookie(COOKIE_REFRESH_TOKEN);
   deleteCookie(COOKIE_USER);
 }

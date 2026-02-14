@@ -2,12 +2,23 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Navbar() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to parse user from localStorage:', error);
+      }
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -51,9 +62,15 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                <Link href="/admin/dashboard" className="text-gray-700 hover:text-amber-600 font-medium">
-                  Dashboard
-                </Link>
+                {user.role === 'ADMIN' ? (
+                  <Link href="/admin/dashboard" className="text-gray-700 hover:text-amber-600 font-medium">
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link href="/user/my-parcels" className="text-gray-700 hover:text-amber-600 font-medium">
+                    My Parcels
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold"
@@ -102,12 +119,23 @@ export default function Navbar() {
             </Link>
             <div className="border-t border-gray-200 mt-4 pt-4">
               {user ? (
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold"
-                >
-                  Logout
-                </button>
+                <>
+                  {user.role === 'ADMIN' ? (
+                    <Link href="/admin/dashboard" className="block py-2 text-gray-700 hover:text-amber-600 mb-2">
+                      Dashboard
+                    </Link>
+                  ) : (
+                    <Link href="/user/my-parcels" className="block py-2 text-gray-700 hover:text-amber-600 mb-2">
+                      My Parcels
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold"
+                  >
+                    Logout
+                  </button>
+                </>
               ) : (
                 <>
                   <Link href="/login" className="block py-2 text-amber-600 font-semibold mb-2">

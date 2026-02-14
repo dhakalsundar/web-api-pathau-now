@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root{
   --text:#0b1220;
@@ -670,5 +668,24 @@ a:hover{ opacity:.92; }
   justify-content:space-between;
   gap:12px;
   flex-wrap:wrap;
+}
+
+/* Skeleton Loader Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Sidebar from '@/app/components/Sidebar';
 import { adminService } from '@/app/lib/services';
 import Link from 'next/link';
 
@@ -35,23 +34,17 @@ export default function ViewUserPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-100">
-        <Sidebar items={[]} userRole="ADMIN" userName="Admin" />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-8 text-center">
-            <p className="text-xl text-gray-600">⏳ Loading user details...</p>
-          </div>
-        </main>
-      </div>
+      <main className="overflow-y-auto">
+        <div className="p-8 text-center">
+          <p className="text-xl text-gray-600">⏳ Loading user details...</p>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar items={[]} userRole="ADMIN" userName="Admin" />
-
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
+    <main className="overflow-y-auto">
+      <div className="p-8">
           <div className="max-w-2xl mx-auto">
             {/* Header */}
             <div className="mb-8">
@@ -130,6 +123,5 @@ export default function ViewUserPage() {
           </div>
         </div>
       </main>
-    </div>
-  );
-}
+    );
+  }
