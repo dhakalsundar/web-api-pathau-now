@@ -8,8 +8,10 @@ export const UserSchema = z.object({
     lastName: z.string().optional(),
     address: z.string().optional(),
     avatar: z.string().optional(),
-    role: z.enum(["CUSTOMER", "STAFF", "ADMIN"]).default("CUSTOMER"),
+    role: z.enum(["CUSTOMER", "STAFF", "ADMIN", "RIDER"]).default("CUSTOMER"),
     isActive: z.boolean().optional(),
+    refreshToken: z.string().optional().nullable(),
+    refreshTokenExpiresAt: z.date().optional().nullable(),
 });
 
 export type UserType = z.infer<typeof UserSchema>;

@@ -126,6 +126,14 @@ export class RiderService {
   async getRiderStats() {
     return await riderRepository.getStats();
   }
+
+  async incrementDeliveries(id: string) {
+    const updated = await riderRepository.incrementDeliveries(id);
+    if (!updated) {
+      throw new HttpError(404, 'Rider not found');
+    }
+    return updated;
+  }
 }
 
 export const riderService = new RiderService();

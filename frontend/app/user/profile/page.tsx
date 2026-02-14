@@ -2,227 +2,345 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/app/components/Navbar';
-import { authService } from '@/app/lib/services';
+import Link from 'next/link';
 
-export default function UserProfilePage() {
+export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phoneNumber: '',
-  });
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [message, setMessage] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const [editData, setEditData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadUserData = () => {
       try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (!token || !userStr) {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
           router.push('/login');
           return;
         }
 
-        const userData = JSON.parse(userStr);
-        setUser(userData);
-        setFormData({
-          firstName: userData.firstName || '',
-          lastName: userData.lastName || '',
-          phoneNumber: userData.phoneNumber || '',
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setEditData({
+          name: parsedUser.name || '',
+          email: parsedUser.email || '',
+          phone: parsedUser.phone || '',
         });
-        if (userData.avatar) {
-          setPreview(userData.avatar);
-        }
       } catch (error) {
-        console.error('Failed to fetch profile:', error);
+        console.error('Failed to load user data:', error);
+        router.push('/login');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    loadUserData();
   }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setEditData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAvatar(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleSaveChanges = async () => {
+    if (!editData.name.trim()) {
+      setError('Name is required');
+      return;
     }
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUpdating(true);
+    if (!editData.email.trim()) {
+      setError('Email is required');
+      return;
+    }
 
     try {
-      const formDataObj = new FormData();
-      formDataObj.append('firstName', formData.firstName);
-      formDataObj.append('lastName', formData.lastName);
-      formDataObj.append('phoneNumber', formData.phoneNumber);
-      if (avatar) {
-        formDataObj.append('avatar', avatar);
-      }
+      setSaving(true);
+      setError('');
+      setSuccess('');
 
-      const response = await authService.updateProfile(user.id, formDataObj);
-      
-      // Update localStorage
-      const updatedUser = { ...user, ...response.data };
+      // Update user data in localStorage (in a real app, this would call an API)
+      const updatedUser = {
+        ...user,
+        name: editData.name,
+        email: editData.email,
+        phone: editData.phone,
+      };
+
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
-      
-      setMessage('✅ Profile updated successfully');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error: any) {
-      setMessage(`❌ ${error.response?.data?.message || 'Failed to update profile'}`);
+      setIsEditing(false);
+      setSuccess('Profile updated successfully!');
+
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError('Failed to update profile');
     } finally {
-      setUpdating(false);
+      setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setEditData({
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+    });
+    setIsEditing(false);
+    setError('');
   };
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100">
-        <Navbar />
-        <div className="container mx-auto px-6 py-20 text-center">
-          <p className="text-xl text-gray-600">⏳ Loading profile...</p>
+      <div className="p-8">
+        <div className="text-center py-20">
+          <div className="inline-block">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
+            <p className="text-xl text-gray-600">⏳ Loading profile...</p>
+          </div>
         </div>
-      </main>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded">
+          <p className="text-red-700 font-medium mb-4">❌ Failed to load profile</p>
+          <Link href="/login" className="text-red-600 hover:text-red-700 font-semibold">
+            Return to Login
+          </Link>
+        </div>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100">
-      <Navbar />
+    <div className="p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">👤 Profile Settings</h1>
+        <p className="text-gray-600">Manage your account information</p>
+      </div>
 
-      <div className="container mx-auto px-6 py-8">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">👤 My Profile</h1>
-            <p className="text-gray-600">Update your personal information</p>
+      {error && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+          <p className="text-red-700 font-medium">❌ {error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
+          <p className="text-green-700 font-medium">✅ {success}</p>
+        </div>
+      )}
+
+      <div className="space-y-6">
+        {/* Profile Avatar Card */}
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg shadow p-8 border border-amber-200">
+          <div className="flex items-center gap-6">
+            <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
+              <span className="text-5xl font-bold text-white">{user.name[0]?.toUpperCase() || 'U'}</span>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-gray-900">{user.name}</p>
+              <p className="text-gray-600">{user.email}</p>
+              <span className="inline-block mt-2 px-3 py-1 bg-amber-200 text-amber-900 rounded-full text-sm font-semibold">
+                {user.role ? user.role.toUpperCase() : 'CUSTOMER'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Information */}
+        <div className="bg-white rounded-lg shadow p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">📋 Account Information</h2>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold"
+              >
+                ✎ Edit Profile
+              </button>
+            )}
           </div>
 
-          {/* Message */}
-          {message && (
-            <div className={`mb-6 p-4 rounded-lg border-2 ${message.includes('✅') ? 'bg-green-50 border-green-300 text-green-700' : 'bg-red-50 border-red-300 text-red-700'} font-semibold`}>
-              {message}
-            </div>
-          )}
-
-          {/* Profile Card */}
-          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-8">
-            {/* Avatar Section */}
-            <div className="mb-8 flex flex-col items-center">
-              <div className="relative">
-                <img
-                  src={preview || 'https://via.placeholder.com/150?text=Avatar'}
-                  alt="Profile Avatar"
-                  className="w-32 h-32 rounded-full border-4 border-amber-500 object-cover"
-                />
-                <label className="absolute bottom-0 right-0 bg-amber-500 text-white rounded-full p-2 cursor-pointer hover:bg-amber-600 transition">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4.5-9 3 4 2.5-4 3.5 7z" />
-                  </svg>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
+          {isEditing ? (
+            // Edit Form
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Full Name <span className="text-red-500">*</span>
                 </label>
-              </div>
-              <p className="mt-4 text-center text-sm text-gray-600">Click the icon to change avatar</p>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    placeholder="Enter first name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    placeholder="Enter last name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
                 <input
-                  type="tel"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
+                  type="text"
+                  name="name"
+                  value={editData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  placeholder="Enter phone number"
+                  placeholder="Enter your full name"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="email"
-                  value={user?.email}
-                  disabled
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                  name="email"
+                  value={editData.email}
+                  onChange={handleInputChange}
+                  placeholder="Enter your email address"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
-                <p className="text-xs text-gray-600 mt-1">Email cannot be changed</p>
               </div>
 
-              <div className="flex gap-4 pt-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Phone Number <span className="text-gray-500">(Optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={editData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Enter your phone number"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              <div className="flex gap-4 mt-6">
                 <button
-                  type="submit"
-                  disabled={updating}
-                  className="flex-1 px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold disabled:opacity-50"
+                  onClick={handleSaveChanges}
+                  disabled={saving}
+                  className="flex-1 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold disabled:bg-gray-400"
                 >
-                  {updating ? '⏳ Saving...' : '✅ Save Changes'}
+                  {saving ? '⏳ Saving...' : '✓ Save Changes'}
                 </button>
                 <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold"
+                  onClick={handleCancel}
+                  className="flex-1 px-4 py-3 bg-gray-300 text-gray-900 rounded-lg hover:bg-gray-400 transition font-semibold"
                 >
                   Cancel
                 </button>
               </div>
-            </form>
+            </div>
+          ) : (
+            // Display Information
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-gray-600 font-semibold mb-1">FULL NAME</p>
+                  <p className="text-lg text-gray-900 font-semibold">{user.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 font-semibold mb-1">EMAIL ADDRESS</p>
+                  <p className="text-lg text-gray-900 font-semibold">{user.email}</p>
+                </div>
+                {user.phone && (
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold mb-1">PHONE NUMBER</p>
+                    <p className="text-lg text-gray-900 font-semibold">{user.phone}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-gray-600 font-semibold mb-1">MEMBER SINCE</p>
+                  <p className="text-lg text-gray-900 font-semibold">
+                    {user.createdAt
+                      ? new Date(user.createdAt).toLocaleDateString()
+                      : 'Not available'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Account Security */}
+        <div className="bg-white rounded-lg shadow p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">🔒 Account Security</h2>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="font-semibold text-gray-900 mb-2">Password</p>
+              <p className="text-gray-600 text-sm mb-4">••••••••••••••</p>
+              <button className="text-amber-600 hover:text-amber-700 font-semibold text-sm">
+                Change Password →
+              </button>
+            </div>
+
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="font-semibold text-gray-900 mb-2">Two-Factor Authentication</p>
+              <p className="text-gray-600 text-sm mb-4">Not enabled</p>
+              <button className="text-amber-600 hover:text-amber-700 font-semibold text-sm">
+                Enable 2FA →
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Quick Links */}
+        <div className="bg-white rounded-lg shadow p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">🔗 Quick Links</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link
+              href="/user/dashboard"
+              className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition"
+            >
+              <p className="font-semibold text-blue-900">📊 Dashboard</p>
+              <p className="text-sm text-blue-700">View your dashboard overview</p>
+            </Link>
+            <Link
+              href="/user/parcels"
+              className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition"
+            >
+              <p className="font-semibold text-green-900">📦 My Parcels</p>
+              <p className="text-sm text-green-700">View all your parcels</p>
+            </Link>
+            <Link
+              href="/user/create-parcel"
+              className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition"
+            >
+              <p className="font-semibold text-amber-900">✚ Create Parcel</p>
+              <p className="text-sm text-amber-700">Book a new parcel</p>
+            </Link>
+            <Link
+              href="/user/track"
+              className="p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition"
+            >
+              <p className="font-semibold text-purple-900">🔍 Track Parcel</p>
+              <p className="text-sm text-purple-700">Track by tracking ID</p>
+            </Link>
+          </div>
+        </div>
+
+        {/* Danger Zone */}
+        <div className="bg-red-50 rounded-lg shadow p-8 border border-red-200">
+          <h2 className="text-2xl font-bold text-red-900 mb-6">⚠️ Danger Zone</h2>
+
+          <button className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold">
+            🗑️ Delete Account
+          </button>
+          <p className="text-sm text-red-700 mt-2">
+            Once you delete your account, there is no going back. Please be certain.
+          </p>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

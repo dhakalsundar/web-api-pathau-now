@@ -1,15 +1,28 @@
 import { z } from 'zod';
 
+// Helper: Convert empty strings to undefined for optional fields
+const emptyStringToUndefined = z.literal('').transform(() => undefined);
+
 // Auth Schemas
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  firstName: z.string().min(2, 'First name is required'),
+  // Support both 'name' (from frontend) and 'firstName' (legacy)
+  name: z.string().min(2, 'Name is required').optional(),
+  firstName: z.string().min(2, 'First name is required').optional(),
   lastName: z.string().optional(),
+  // Support both 'phone' (from frontend) and 'phoneNumber' (legacy)
+  phone: z.string().optional(),
   phoneNumber: z.string().optional(),
   address: z.string().optional(),
-  role: z.enum(['CUSTOMER', 'STAFF', 'ADMIN']).optional(),
-});
+  role: z.enum(['CUSTOMER', 'STAFF', 'ADMIN', 'RIDER']).optional(),
+  // Rider-specific fields - handle empty strings
+  vehicleType: z.union([z.enum(['BIKE', 'CAR', 'VAN']), emptyStringToUndefined]).optional(),
+  vehicleNumber: z.string().optional(),
+}).refine(
+  (data) => data.name || data.firstName,
+  { message: 'Either name or firstName is required' }
+);
 
 export const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -33,6 +46,7 @@ export const createShipmentSchema = z.object({
   weight: z.number().positive('Weight must be positive').optional(),
   price: z.number().positive('Price must be positive').optional(),
   deliveryType: z.enum(['STANDARD', 'EXPRESS', 'SAME_DAY']).optional(),
+  parcelType: z.enum(['DOCUMENT', 'PARCEL', 'FOOD', 'FRAGILE', 'HEAVY', 'OTHER']).optional(),
   paymentStatus: z.enum(['PENDING', 'PAID', 'COD']).optional(),
   notes: z.string().optional(),
 });

@@ -3,12 +3,17 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import { connectDatabase } from "./database/mongodb";
 import { PORT, FRONTEND_URL } from "./config";
+import { logger } from "./utils/logger";
+import { requestLogger } from "./middleware/requestLogger.middleware";
+import { responseFormatter } from "./middleware/responseFormatter.middleware";
+import { errorHandler } from "./middleware/error.middleware";
 import authRoutes from "./routes/auth.route";
 import adminRoutes from "./routes/admin.route";
 import trackRoutes from "./routes/track.route";
 import adminShipmentRoutes from "./routes/admin.shipment.route";
 import shipmentRoutes from "./routes/shipment.route";
 import riderRoutes from "./routes/rider.route";
+import riderSelfRoutes from "./routes/rider.self.route";
 import adminAnalyticsRoutes from "./routes/admin.analytics.route";
 
 const app: Application = express();
@@ -23,27 +28,64 @@ app.use(
   })
 );
 
+// Add request logger and response formatter middleware
+app.use(requestLogger);
+app.use(responseFormatter);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", adminRoutes);
 app.use('/api/track', trackRoutes);
 app.use('/api/shipments', shipmentRoutes);
 app.use('/api/admin/shipments', adminShipmentRoutes);
-app.use('/api/riders', riderRoutes);
+app.use('/api/riders/me', riderSelfRoutes);  // Rider self-service routes (must come first - more specific)
+app.use('/api/riders', riderRoutes);         // Admin rider management routes
 app.use('/api/admin/analytics', adminAnalyticsRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ success: true, message: "Welcome to the API" });
 });
 
+// Debug endpoint to check current user info from token
+app.get("/debug/me", (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(400).json({ error: "No token provided" });
+  }
+  try {
+    const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'default');
+    return res.status(200).json({ user: decoded });
+  } catch (err: any) {
+    return res.status(401).json({ error: "Invalid token", message: err.message });
+  }
+});
+
+// 404 handler for unmatched routes
+app.use((req: Request, res: Response, next) => {
+  const error = new Error(`Not Found - ${req.originalUrl}`);
+  (error as any).statusCode = 404;
+  (error as any).name = 'NotFoundError';
+  next(error);
+});
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
 async function startServer() {
-  await connectDatabase();
+  try {
+    logger.info('🚀 Starting server...');
+    await connectDatabase();
+    logger.info('✅ Database connected');
+  } catch (error) {
+    logger.error('❌ Failed to connect database:', error);
+    process.exit(1);
+  }
 
   // Seed demo shipments for local dev if none exist
   try {
     const { ShipmentModel } = await import('./models/shipment.model');
     const count = await ShipmentModel.countDocuments();
     if (count === 0) {
-      console.log('Seeding demo shipments...');
+      logger.info('🌱 Seeding demo shipments...');
       await ShipmentModel.create([
         {
           trackingNumber: 'PNDEMO1',
@@ -68,32 +110,51 @@ async function startServer() {
           ]
         }
       ]);
-      console.log('Demo shipments created');
+      logger.info('✅ Demo shipments created');
     }
   } catch (err) {
-    console.log('Seed failed', err);
+    logger.error('❌ Demo shipment seed failed', err);
   }
 
   // Ensure there is at least one admin user for local development
   try {
     const { UserModel } = await import('./models/user.model');
     const bcrypt = await import('bcryptjs');
-    const adminExists = await UserModel.findOne({ role: 'ADMIN' });
+    
+    const adminEmail = 'admin@example.com';
+    const adminPassword = 'Admin123!';
+    
+    const adminExists = await UserModel.findOne({ email: adminEmail });
+    
     if (!adminExists) {
-      console.log('Seeding admin user...');
-      const hashed = await bcrypt.hash('Admin123!', 10);
-      await UserModel.create({ email: 'admin@example.com', password: hashed, firstName: 'Admin', role: 'ADMIN' });
-      console.log('Admin user created - email: admin@example.com password: Admin123!');
+      logger.info('🔐 Seeding admin user...');
+      const hashedPassword = await bcrypt.hash(adminPassword, 10);
+      
+      const admin = await UserModel.create({
+        email: adminEmail,
+        password: hashedPassword,
+        firstName: 'Admin',
+        lastName: 'User',
+        phoneNumber: '+1-555-0001',
+        address: 'Admin Office',
+        role: 'ADMIN',
+        isActive: true,
+      });
+      
+      logger.info('✅ Admin user created successfully!');
+      logger.info(`📧 Email: ${adminEmail}`);
+      logger.info(`🔑 Password: ${adminPassword}`);
+      logger.info('👤 Name: Admin User');
+    } else {
+      logger.info(`✅ Admin user already exists - ${adminEmail}`);
     }
   } catch (err) {
-    console.log('Admin seed failed', err);
+    logger.error('❌ Admin seed failed:', err);
   }
 
-  // Attach error handler middleware (last)
-  import('./middleware/error.middleware').then(m => app.use(m.errorHandler));
-
   app.listen(PORT, () => {
-    console.log(`Server: http://localhost:${PORT}`);
+    logger.info(`✅ Server running at http://localhost:${PORT}`);
+    logger.info(`📊 Logs directory: ${process.cwd()}/logs`);
   });
 }
 

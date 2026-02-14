@@ -1,39 +1,21 @@
-import axios from 'axios';
+/**
+ * DEPRECATED: This file is maintained for backwards compatibility only.
+ * 
+ * ⚠️  DO NOT USE THIS FILE IN NEW CODE
+ * 
+ * All new code should import directly from:
+ *   import axiosInstance from '@/lib/api/axios';
+ * 
+ * This file now simply re-exports the centralized axios instance
+ * from lib/api/axios.ts which has proper token refresh, interceptors,
+ * and error handling configured.
+ */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import axiosInstance from '@/lib/api/axios';
 
-// Create axios instance
-const api = axios.create({
-  baseURL: API_BASE,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add token to requests
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-// Handle errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);
+/**
+ * Re-export the centralized axios instance for backwards compatibility
+ */
+const api = axiosInstance;
 
 export default api;

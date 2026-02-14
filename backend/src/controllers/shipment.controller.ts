@@ -7,7 +7,14 @@ const shipmentService = new ShipmentService();
 class ShipmentController {
   async create(req: Request, res: Response) {
     const customerId = (req as any).user?.id;
-    const shipment = await shipmentService.createShipment(req.body, customerId);
+    const userRole = (req as any).user?.role;
+
+    // Ensure customerId is present for non-admin users
+    if (!customerId) {
+      throw new HttpError(401, 'User authentication required. Please log in to create a shipment.');
+    }
+
+    const shipment = await shipmentService.createShipment(req.body, customerId, userRole);
 
     return res.status(201).json({
       success: true,
@@ -17,22 +24,45 @@ class ShipmentController {
   }
 
   async getAll(req: Request, res: Response) {
-    const { page = '1', limit = '10', status, riderId, customerId, paymentStatus, deliveryType, startDate, endDate } = req.query as Record<string, string>;
+    const { page = '1', limit = '10', status, trackingNumber, riderId, customerId, paymentStatus, deliveryType, startDate, endDate } = req.query as Record<string, string>;
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const userId = (req as any).user?.id;
+    const userRole = (req as any).user?.role;
 
     const filters: any = {};
     if (status) filters.status = status;
+    if (trackingNumber) filters.trackingNumber = trackingNumber;
     if (riderId) filters.riderId = riderId;
-    if (customerId) filters.customerId = customerId;
     if (paymentStatus) filters.paymentStatus = paymentStatus;
     if (deliveryType) filters.deliveryType = deliveryType;
     if (startDate) filters.startDate = new Date(startDate);
     if (endDate) filters.endDate = new Date(endDate);
 
-    const result = await shipmentService.getAllShipments(filters, parseInt(page, 10), parseInt(limit, 10));
+    // Role-based filtering for security
+    const isAdmin = userRole === 'ADMIN' || userRole === 'STAFF';
+    
+    if (isAdmin) {
+      // Admins can see all shipments or filter by specific customer
+      if (customerId) {
+        filters.customerId = customerId;
+      }
+    } else {
+      // Regular users can only see their own shipments
+      filters.customerId = userId;
+    }
+
+    const { shipments, total } = await shipmentService.getAllShipments(filters, pageNum, limitNum);
 
     return res.status(200).json({
       success: true,
-      data: result,
+      message: 'Shipments retrieved successfully',
+      data: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        results: shipments,
+      },
     });
   }
 
@@ -56,7 +86,17 @@ class ShipmentController {
   }
 
   async getById(req: Request, res: Response) {
+    const userId = (req as any).user?.id;
+    const userRole = (req as any).user?.role;
+    const isAdmin = userRole === 'ADMIN' || userRole === 'STAFF';
+
     const shipment = await shipmentService.getById(req.params.id);
+
+    // Security: non-admin users can only view their own shipments
+    if (!isAdmin && shipment.customerId?.toString() !== userId) {
+      throw new HttpError(403, 'You do not have permission to view this shipment');
+    }
+
     return res.status(200).json({
       success: true,
       data: shipment,
@@ -64,15 +104,37 @@ class ShipmentController {
   }
 
   async update(req: Request, res: Response) {
-    const shipment = await shipmentService.updateShipment(req.params.id, req.body);
+    const userId = (req as any).user?.id;
+    const userRole = (req as any).user?.role;
+    const isAdmin = userRole === 'ADMIN' || userRole === 'STAFF';
+
+    const shipment = await shipmentService.getById(req.params.id);
+
+    // Security: non-admin users can only update their own shipments
+    if (!isAdmin && shipment.customerId?.toString() !== userId) {
+      throw new HttpError(403, 'You do not have permission to update this shipment');
+    }
+
+    const updated = await shipmentService.updateShipment(req.params.id, req.body);
     return res.status(200).json({
       success: true,
       message: 'Shipment updated successfully',
-      data: shipment,
+      data: updated,
     });
   }
 
   async delete(req: Request, res: Response) {
+    const userId = (req as any).user?.id;
+    const userRole = (req as any).user?.role;
+    const isAdmin = userRole === 'ADMIN' || userRole === 'STAFF';
+
+    const shipment = await shipmentService.getById(req.params.id);
+
+    // Security: non-admin users can only delete their own shipments
+    if (!isAdmin && shipment.customerId?.toString() !== userId) {
+      throw new HttpError(403, 'You do not have permission to delete this shipment');
+    }
+
     const result = await shipmentService.deleteShipment(req.params.id);
     return res.status(200).json({
       success: true,

@@ -12,10 +12,12 @@ const UserSchema: Schema = new Schema<UserType>(
         avatar: { type: String },
         role: {
             type: String,
-            enum: ['CUSTOMER', 'STAFF', 'ADMIN'],
+            enum: ['CUSTOMER', 'STAFF', 'ADMIN', 'RIDER'],
             default: 'CUSTOMER',
         },
         isActive: { type: Boolean, default: true },
+        refreshToken: { type: String, default: null },
+        refreshTokenExpiresAt: { type: Date, default: null },
     },
     {
         timestamps: true, 

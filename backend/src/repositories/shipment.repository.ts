@@ -9,6 +9,7 @@ export interface ShipmentFilters {
   endDate?: Date;
   paymentStatus?: string;
   deliveryType?: string;
+  trackingNumber?: string;
 }
 
 export class ShipmentRepository {
@@ -38,6 +39,7 @@ export class ShipmentRepository {
     if (filters.customerId) query.customerId = filters.customerId;
     if (filters.paymentStatus) query.paymentStatus = filters.paymentStatus;
     if (filters.deliveryType) query.deliveryType = filters.deliveryType;
+    if (filters.trackingNumber) query.trackingNumber = new RegExp(filters.trackingNumber, 'i');
     
     if (filters.startDate || filters.endDate) {
       query.createdAt = {};

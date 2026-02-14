@@ -32,6 +32,7 @@ export interface IShipment extends Document {
   price?: number;
   paymentStatus?: 'PENDING' | 'PAID' | 'COD';
   deliveryType?: 'STANDARD' | 'EXPRESS' | 'SAME_DAY';
+  parcelType?: 'DOCUMENT' | 'PARCEL' | 'FOOD' | 'FRAGILE' | 'HEAVY' | 'OTHER';
   courier?: string;
   notes?: string;
   events: IShipmentEvent[];
@@ -93,6 +94,11 @@ const ShipmentSchema: Schema = new Schema(
       type: String, 
       enum: ['STANDARD', 'EXPRESS', 'SAME_DAY'], 
       default: 'STANDARD' 
+    },
+    parcelType: {
+      type: String,
+      enum: ['DOCUMENT', 'PARCEL', 'FOOD', 'FRAGILE', 'HEAVY', 'OTHER'],
+      default: 'PARCEL'
     },
     courier: { type: String, default: 'Pathao Express' },
     notes: { type: String },
