@@ -59,8 +59,8 @@ export default function ShipmentBookingForm({
 
   const calculatePrice = (weight: number): number => {
     if (!weight || weight <= 0) return 0;
-    const basePrice = 50; // Base price in Taka
-    const pricePerKg = 10; // Price per kg
+    const basePrice = 100; // Base price in Nepali Rupees
+    const pricePerKg = 20; // Price per kg in NPR
     return Math.round(basePrice + weight * pricePerKg);
   };
 
@@ -75,8 +75,8 @@ export default function ShipmentBookingForm({
         return;
       }
 
-      if (!formData.senderPhone.trim() || formData.senderPhone.length < 10) {
-        addToast('Please enter valid sender phone number', 'error');
+      if (!formData.senderPhone.trim() || formData.senderPhone.replace(/\D/g, '').length < 10) {
+        addToast('Please enter valid sender phone number (10 digits)', 'error');
         setLoading(false);
         return;
       }
@@ -93,8 +93,8 @@ export default function ShipmentBookingForm({
         return;
       }
 
-      if (!formData.receiverPhone.trim() || formData.receiverPhone.length < 10) {
-        addToast('Please enter valid receiver phone number', 'error');
+      if (!formData.receiverPhone.trim() || formData.receiverPhone.replace(/\D/g, '').length < 10) {
+        addToast('Please enter valid receiver phone number (10 digits)', 'error');
         setLoading(false);
         return;
       }
@@ -117,8 +117,8 @@ export default function ShipmentBookingForm({
         return;
       }
 
-      // Prepare shipment data
-      const shipmentPayload = {
+      // Prepare parcel data
+      const parcelPayload = {
         sender: {
           name: formData.senderName.trim(),
           address: formData.pickupAddress.trim(),
@@ -138,7 +138,7 @@ export default function ShipmentBookingForm({
       };
 
       // Submit to API
-      const response = await axios.post('/api/shipments', shipmentPayload);
+      const response = await axios.post('/parcels', parcelPayload);
 
       const trackingNumber = response.data?.data?.trackingNumber;
 
@@ -147,7 +147,7 @@ export default function ShipmentBookingForm({
       }
 
       // Show success toast
-      addToast(`✅ Shipment booked! Tracking: ${trackingNumber}`, 'success', 4000);
+      addToast(` Parcel booked! Tracking: ${trackingNumber}`, 'success', 4000);
 
       // Call optional callback
       if (onSuccess) {
@@ -181,7 +181,7 @@ export default function ShipmentBookingForm({
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        'Failed to book shipment';
+        'Failed to book parcel';
 
       addToast(`Error: ${errorMessage}`, 'error', 4000);
       console.error('Booking error:', error);
@@ -222,7 +222,7 @@ export default function ShipmentBookingForm({
               name="senderPhone"
               value={formData.senderPhone}
               onChange={handleChange}
-              placeholder="+880 1X XXX XXXXX"
+              placeholder="+977 98 XXXXX XXXXX"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               required
             />
@@ -251,7 +251,7 @@ export default function ShipmentBookingForm({
               value={formData.pickupAddress}
               onChange={handleChange}
               placeholder="Full pickup address with details"
-              rows={3}
+              rows={2}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
               required
             />
@@ -265,7 +265,7 @@ export default function ShipmentBookingForm({
       {/* Receiver Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span>🎯</span> Receiver Information
+          <span></span> Receiver Information
         </h2>
         <div className="space-y-4">
           <div>
@@ -292,7 +292,7 @@ export default function ShipmentBookingForm({
               name="receiverPhone"
               value={formData.receiverPhone}
               onChange={handleChange}
-              placeholder="+880 1X XXX XXXXX"
+              placeholder="+977 98 XXXXX XXXXX"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               required
             />
@@ -321,7 +321,7 @@ export default function ShipmentBookingForm({
               value={formData.deliveryAddress}
               onChange={handleChange}
               placeholder="Full delivery address with details"
-              rows={3}
+              rows={2}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
               required
             />
@@ -335,7 +335,7 @@ export default function ShipmentBookingForm({
       {/* Parcel Details Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span>📦</span> Parcel Details
+          <span></span> Parcel Details
         </h2>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
@@ -357,7 +357,7 @@ export default function ShipmentBookingForm({
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Price (৳) <span className="text-red-500">*</span>
+              Price (Rs) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -385,12 +385,12 @@ export default function ShipmentBookingForm({
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               required
             >
-              <option value="DOCUMENT">📄 Document</option>
-              <option value="PARCEL">📦 Parcel</option>
-              <option value="FOOD">🍱 Food</option>
-              <option value="FRAGILE">🥚 Fragile Items</option>
-              <option value="HEAVY">💪 Heavy Items</option>
-              <option value="OTHER">📩 Other</option>
+              <option value="DOCUMENT"> Document</option>
+              <option value="PARCEL"> Parcel</option>
+              <option value="FOOD"> Food</option>
+              <option value="FRAGILE"> Fragile Items</option>
+              <option value="HEAVY"> Heavy Items</option>
+              <option value="OTHER"> Other</option>
             </select>
           </div>
 
@@ -405,9 +405,9 @@ export default function ShipmentBookingForm({
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               required
             >
-              <option value="STANDARD">🚚 Standard (2-3 days)</option>
-              <option value="EXPRESS">⚡ Express (1 day)</option>
-              <option value="SAME_DAY">🚄 Same Day</option>
+              <option value="STANDARD"> Standard (2-3 days)</option>
+              <option value="EXPRESS"> Express (1 day)</option>
+              <option value="SAME_DAY"> Same Day</option>
             </select>
           </div>
         </div>
@@ -416,9 +416,9 @@ export default function ShipmentBookingForm({
         {formData.weight && formData.price && (
           <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-700">
-              <span className="font-semibold">Calculated Price:</span> ৳{calculatePrice(parseFloat(formData.weight))}
+              <span className="font-semibold">Calculated Price:</span> Rs{calculatePrice(parseFloat(formData.weight))}
               {parseFloat(formData.price) !== calculatePrice(parseFloat(formData.weight)) && (
-                <span className="ml-2 text-gray-600">(Custom: ৳{formData.price})</span>
+                <span className="ml-2 text-gray-600">(Custom: Rs{formData.price})</span>
               )}
             </p>
           </div>
@@ -427,13 +427,11 @@ export default function ShipmentBookingForm({
 
       {/* Divider */}
       <div className="border-t border-gray-200 my-8"></div>
-
-      {/* Price Summary */}
       <div className="mb-8 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
         <div className="flex justify-between items-center">
           <span className="text-lg font-bold text-gray-900">Total Price</span>
           <span className="text-3xl font-bold text-amber-600">
-            ৳{formData.price || '0'}
+            Rs{formData.price || '0'}
           </span>
         </div>
       </div>
@@ -446,13 +444,13 @@ export default function ShipmentBookingForm({
       >
         {loading ? (
           <>
-            <span className="animate-spin">⏳</span>
+            <span className="animate-spin"></span>
             Processing...
           </>
         ) : (
           <>
             <span>✓</span>
-            Book Shipment
+            Book Parcel
           </>
         )}
       </button>

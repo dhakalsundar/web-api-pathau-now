@@ -24,13 +24,7 @@ winston.addColors(LOG_COLORS);
 // Ensure logs directory exists
 const logsDir = path.join(process.cwd(), 'logs');
 
-/**
- * Winston Logger Configuration
- * Logs to:
- * - Console (all levels with colors)
- * - File: logs/combined.log (all levels)
- * - File: logs/error.log (errors only)
- */
+
 export const logger = winston.createLogger({
   levels: LOG_LEVELS,
   level: process.env.LOG_LEVEL || 'info',

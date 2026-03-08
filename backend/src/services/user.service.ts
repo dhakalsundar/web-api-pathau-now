@@ -125,7 +125,15 @@ export class UserService {
       data.password = await bcryptjs.hash(data.password, 10);
     }
 
-    const newUser = await userRepository.create(data as any);
+    // Normalize role to uppercase
+    const userData = {
+      ...data,
+      role: (data.role || 'CUSTOMER').toUpperCase(),
+    };
+
+    const newUser = await userRepository.create(userData as any);
+    
+    // Rider-specific fields are now part of the User model, no need for separate profile
     
     const userObj = newUser.toObject();
     delete userObj.password;
@@ -156,7 +164,7 @@ export class UserService {
     const userData = {
       ...data,
       password: hashedPassword,
-      role: data.role || 'CUSTOMER',
+      role: (data.role || 'CUSTOMER').toUpperCase(),
     };
 
     const newUser = await userRepository.create(userData as any);

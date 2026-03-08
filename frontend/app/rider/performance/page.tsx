@@ -32,7 +32,7 @@ export default function RiderPerformance() {
       setStats(res.data);
       setError('');
     } catch (err: any) {
-      console.error('❌ Error fetching stats:', err);
+      console.error(' Error fetching stats:', err);
       setError(err.response?.data?.message || 'Failed to load performance stats');
     } finally {
       setLoading(false);
@@ -74,7 +74,7 @@ export default function RiderPerformance() {
         {/* Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">📈 My Performance</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2"> My Performance</h1>
             <p className="text-gray-600">Track your delivery performance and achievements</p>
           </div>
           <Link
@@ -88,7 +88,7 @@ export default function RiderPerformance() {
         {/* Error Alert */}
         {error && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-            <p className="text-red-700 font-medium">❌ {error}</p>
+            <p className="text-red-700 font-medium"> {error}</p>
           </div>
         )}
 
@@ -99,7 +99,7 @@ export default function RiderPerformance() {
               {/* Total Deliveries */}
               <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-t-4 border-green-500">
                 <p className="text-gray-600 text-sm font-semibold mb-2">Total Deliveries</p>
-                <p className="text-4xl font-bold text-green-600">🎯 {stats.totalDeliveries}</p>
+                <p className="text-4xl font-bold text-green-600"> {stats.totalDeliveries}</p>
                 <p className="text-xs text-green-700 mt-3">All-time record</p>
               </div>
 
@@ -107,7 +107,7 @@ export default function RiderPerformance() {
               <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-t-4 border-yellow-500">
                 <p className="text-gray-600 text-sm font-semibold mb-2">Customer Rating</p>
                 <p className={`text-4xl font-bold pl-2 pr-2 py-1  rounded ${getRatingColor(stats.rating)}`}>
-                  ⭐ {stats.rating?.toFixed(1) || '0.0'}/5
+                   {stats.rating?.toFixed(1) || '0.0'}/5
                 </p>
                 <p className="text-xs text-yellow-700 mt-3">Based on {stats.totalDeliveries} deliveries</p>
               </div>
@@ -115,7 +115,7 @@ export default function RiderPerformance() {
               {/* Completed */}
               <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-t-4 border-blue-500">
                 <p className="text-gray-600 text-sm font-semibold mb-2">Completed</p>
-                <p className="text-4xl font-bold text-blue-600">✅ {stats.completedDeliveries}</p>
+                <p className="text-4xl font-bold text-blue-600"> {stats.completedDeliveries}</p>
                 <p className="text-xs text-blue-700 mt-3">
                   {((stats.completedDeliveries / stats.totalDeliveries) * 100).toFixed(1)}% success rate
                 </p>
@@ -124,14 +124,14 @@ export default function RiderPerformance() {
               {/* On-Time Percentage */}
               <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-t-4 border-purple-500">
                 <p className="text-gray-600 text-sm font-semibold mb-2">On-Time Rate</p>
-                <p className="text-4xl font-bold text-purple-600">⏰ {stats.onTimePercentage?.toFixed(1) || '0'}%</p>
+                <p className="text-4xl font-bold text-purple-600"> {stats.onTimePercentage?.toFixed(1) || '0'}%</p>
                 <p className="text-xs text-purple-700 mt-3">Deliveries on schedule</p>
               </div>
             </div>
 
             {/* Performance Breakdown */}
             <div className="bg-white rounded-lg shadow p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">📊 Performance Breakdown</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6"> Performance Breakdown</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column */}
                 <div className="space-y-6">
@@ -139,7 +139,7 @@ export default function RiderPerformance() {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <p className="text-gray-700 font-semibold">Failed Deliveries</p>
-                      <span className="text-red-600 font-bold">❌ {stats.failedDeliveries}</span>
+                      <span className="text-red-600 font-bold"> {stats.failedDeliveries}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                       <div
@@ -158,7 +158,7 @@ export default function RiderPerformance() {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <p className="text-gray-700 font-semibold">Avg. Deliveries/Day</p>
-                      <span className="text-blue-600 font-bold">📦 {stats.averageDeliveriesPerDay?.toFixed(1) || '0'}</span>
+                      <span className="text-blue-600 font-bold"> {stats.averageDeliveriesPerDay?.toFixed(1) || '0'}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                       <div
@@ -175,7 +175,7 @@ export default function RiderPerformance() {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <p className="text-gray-700 font-semibold">Customer Satisfaction</p>
-                      <span className="text-green-600 font-bold">😊 {stats.customerSatisfaction?.toFixed(1) || '0'}%</span>
+                      <span className="text-green-600 font-bold"> {stats.customerSatisfaction?.toFixed(1) || '0'}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                       <div
@@ -193,7 +193,7 @@ export default function RiderPerformance() {
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <p className="text-gray-700 font-semibold">Total Distance Covered</p>
-                        <span className="text-indigo-600 font-bold">🗺️ {stats.totalKm?.toFixed(1)} km</span>
+                        <span className="text-indigo-600 font-bold"> {stats.totalKm?.toFixed(1)} km</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                         <div
@@ -212,7 +212,7 @@ export default function RiderPerformance() {
                 <div className="space-y-6">
                   {/* Performance Levels */}
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
-                    <h3 className="font-bold text-gray-900 mb-4">🏆 Performance Level</h3>
+                    <h3 className="font-bold text-gray-900 mb-4"> Performance Level</h3>
                     {(() => {
                       const level = getPerformanceLevel(stats.completedDeliveries / stats.totalDeliveries * 100);
                       return (
@@ -229,34 +229,34 @@ export default function RiderPerformance() {
 
                   {/* Achievements */}
                   <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
-                    <h3 className="font-bold text-gray-900 mb-4">🎖️ Achievements</h3>
+                    <h3 className="font-bold text-gray-900 mb-4"> Achievements</h3>
                     <div className="space-y-3">
                       {stats.totalDeliveries >= 100 && (
                         <div className="flex items-center gap-2 p-2 bg-yellow-100 rounded">
-                          <span className="text-lg">🌟</span>
+                          <span className="text-lg"></span>
                           <span className="text-sm font-semibold">Century Rider - 100+ deliveries</span>
                         </div>
                       )}
                       {stats.rating >= 4.8 && (
                         <div className="flex items-center gap-2 p-2 bg-gold-100 rounded">
-                          <span className="text-lg">👑</span>
+                          <span className="text-lg"></span>
                           <span className="text-sm font-semibold">Top Rated - 4.8+ rating</span>
                         </div>
                       )}
                       {stats.onTimePercentage >= 95 && (
                         <div className="flex items-center gap-2 p-2 bg-blue-100 rounded">
-                          <span className="text-lg">⏰</span>
+                          <span className="text-lg"></span>
                           <span className="text-sm font-semibold">Punctual Pro - 95%+ on-time</span>
                         </div>
                       )}
                       {stats.customerSatisfaction >= 95 && (
                         <div className="flex items-center gap-2 p-2 bg-green-100 rounded">
-                          <span className="text-lg">😊</span>
+                          <span className="text-lg"></span>
                           <span className="text-sm font-semibold">Customer Champion - 95%+ satisfaction</span>
                         </div>
                       )}
                       {stats.totalDeliveries < 100 && !stats.rating && !stats.onTimePercentage && (
-                        <p className="text-sm text-gray-600">Keep delivering to unlock achievements! 🚀</p>
+                        <p className="text-sm text-gray-600">Keep delivering to unlock achievements! </p>
                       )}
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export default function RiderPerformance() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* This Month */}
               <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">📅 This Month</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4"> This Month</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-gray-200">
                     <span className="text-gray-600">Deliveries</span>
@@ -278,7 +278,7 @@ export default function RiderPerformance() {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-200">
                     <span className="text-gray-600">Average Rating</span>
-                    <span className="font-bold text-yellow-600">⭐ {stats.rating?.toFixed(1)}/5</span>
+                    <span className="font-bold text-yellow-600"> {stats.rating?.toFixed(1)}/5</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-200">
                     <span className="text-gray-600">On-Time Deliveries</span>
@@ -289,7 +289,7 @@ export default function RiderPerformance() {
 
               {/* Goals Progress */}
               <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">🎯 Your Goals</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4"> Your Goals</h3>
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Target: 50 deliveries/day</p>
@@ -325,7 +325,7 @@ export default function RiderPerformance() {
 
             {/* Tips & Recommendations */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-blue-900 mb-3">💡 Tips to Improve Performance</h3>
+              <h3 className="text-lg font-bold text-blue-900 mb-3"> Tips to Improve Performance</h3>
               <ul className="text-sm text-blue-800 space-y-2">
                 <li>✓ Plan your route efficiently to increase deliveries per day</li>
                 <li>✓ Communicate with customers for a better experience</li>
@@ -339,16 +339,16 @@ export default function RiderPerformance() {
             {/* Earnings Info */}
             {stats.totalEarnings && (
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow p-6 border border-green-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Total Earnings</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4"> Total Earnings</h3>
                 <div className="flex items-end gap-4">
                   <div>
                     <p className="text-gray-600 text-sm font-semibold mb-2">All-Time Earnings</p>
-                    <p className="text-4xl font-bold text-green-600">৳{stats.totalEarnings?.toLocaleString()}</p>
+                    <p className="text-4xl font-bold text-green-600">Rs{stats.totalEarnings?.toLocaleString()}</p>
                   </div>
                   <div className="text-right flex-1">
                     <p className="text-gray-600 text-sm font-semibold mb-2">Average Per Delivery</p>
                     <p className="text-2xl font-bold text-green-600">
-                      ৳{(stats.totalEarnings / stats.totalDeliveries).toFixed(0)}
+                      Rs{(stats.totalEarnings / stats.totalDeliveries).toFixed(0)}
                     </p>
                   </div>
                 </div>

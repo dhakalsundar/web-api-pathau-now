@@ -31,7 +31,7 @@ interface ConfirmationModalProps {
  *   isDangerous={true}
  *   onConfirm={() => handleDelete()}
  *   onCancel={() => setShowConfirm(false)}
- *   icon="⚠️"
+ *   icon=""
  * />
  */
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({

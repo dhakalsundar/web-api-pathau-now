@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ProfilePictureUpload from '@/components/ProfilePictureUpload';
+import { getAuthToken, getUserDetails, setAuthCookies } from '@/lib/cookies';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -12,31 +14,46 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const [avatarSuccess, setAvatarSuccess] = useState('');
 
   const [editData, setEditData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
   });
 
   useEffect(() => {
     const loadUserData = () => {
       try {
-        const userData = localStorage.getItem('user');
-        if (!userData) {
+        const userData = getUserDetails();
+        const token = getAuthToken();
+        if (!userData || !token) {
           router.push('/login');
           return;
         }
 
-        const parsedUser = JSON.parse(userData);
+        const parsedUser = userData;
         setUser(parsedUser);
+        console.log(' [ProfilePage] Loaded user data:', {
+          id: parsedUser.id,
+          email: parsedUser.email,
+          firstName: parsedUser.firstName,
+          lastName: parsedUser.lastName,
+          phoneNumber: parsedUser.phoneNumber,
+          createdAt: parsedUser.createdAt,
+          role: parsedUser.role,
+        });
+        
         setEditData({
-          name: parsedUser.name || '',
+          firstName: parsedUser.firstName || '',
+          lastName: parsedUser.lastName || '',
           email: parsedUser.email || '',
-          phone: parsedUser.phone || '',
+          phoneNumber: parsedUser.phoneNumber || '',
         });
       } catch (error) {
-        console.error('Failed to load user data:', error);
+        console.error(' Failed to load user data:', error);
         router.push('/login');
       } finally {
         setLoading(false);
@@ -55,8 +72,8 @@ export default function ProfilePage() {
   };
 
   const handleSaveChanges = async () => {
-    if (!editData.name.trim()) {
-      setError('Name is required');
+    if (!editData.firstName.trim()) {
+      setError('First name is required');
       return;
     }
 
@@ -70,15 +87,19 @@ export default function ProfilePage() {
       setError('');
       setSuccess('');
 
-      // Update user data in localStorage (in a real app, this would call an API)
+      // Update user data in cookies (in a real app, this would call an API)
       const updatedUser = {
         ...user,
-        name: editData.name,
+        firstName: editData.firstName,
+        lastName: editData.lastName,
         email: editData.email,
-        phone: editData.phone,
+        phoneNumber: editData.phoneNumber,
       };
 
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      const token = getAuthToken();
+      if (token) {
+        setAuthCookies(token, updatedUser);
+      }
       setUser(updatedUser);
       setIsEditing(false);
       setSuccess('Profile updated successfully!');
@@ -93,9 +114,10 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setEditData({
-      name: user?.name || '',
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
       email: user?.email || '',
-      phone: user?.phone || '',
+      phoneNumber: user?.phoneNumber || '',
     });
     setIsEditing(false);
     setError('');
@@ -107,7 +129,7 @@ export default function ProfilePage() {
         <div className="text-center py-20">
           <div className="inline-block">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
-            <p className="text-xl text-gray-600">⏳ Loading profile...</p>
+            <p className="text-xl text-gray-600"> Loading profile...</p>
           </div>
         </div>
       </div>
@@ -118,7 +140,7 @@ export default function ProfilePage() {
     return (
       <div className="p-8">
         <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded">
-          <p className="text-red-700 font-medium mb-4">❌ Failed to load profile</p>
+          <p className="text-red-700 font-medium mb-4"> Failed to load profile</p>
           <Link href="/login" className="text-red-600 hover:text-red-700 font-semibold">
             Return to Login
           </Link>
@@ -126,6 +148,14 @@ export default function ProfilePage() {
       </div>
     );
   }
+
+  const getAvatarLetter = () => {
+    const firstInitial = user?.firstName?.[0]?.toUpperCase() || 'U';
+    const lastInitial = user?.lastName?.[0]?.toUpperCase() || '';
+    return firstInitial + lastInitial;
+  };
+
+  const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
 
   return (
     <div className="p-8">
@@ -137,28 +167,61 @@ export default function ProfilePage() {
 
       {error && (
         <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p className="text-red-700 font-medium">❌ {error}</p>
+          <p className="text-red-700 font-medium"> {error}</p>
         </div>
       )}
 
       {success && (
         <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
-          <p className="text-green-700 font-medium">✅ {success}</p>
+          <p className="text-green-700 font-medium"> {success}</p>
+        </div>
+      )}
+
+      {avatarError && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+          <p className="text-red-700 font-medium"> {avatarError}</p>
+        </div>
+      )}
+
+      {avatarSuccess && (
+        <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
+          <p className="text-green-700 font-medium"> {avatarSuccess}</p>
         </div>
       )}
 
       <div className="space-y-6">
-        {/* Profile Avatar Card */}
+        {/* Profile Avatar Card with Upload */}
         <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg shadow p-8 border border-amber-200">
-          <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
-              <span className="text-5xl font-bold text-white">{user.name[0]?.toUpperCase() || 'U'}</span>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Avatar Section */}
             <div>
-              <p className="text-3xl font-bold text-gray-900">{user.name}</p>
-              <p className="text-gray-600">{user.email}</p>
-              <span className="inline-block mt-2 px-3 py-1 bg-amber-200 text-amber-900 rounded-full text-sm font-semibold">
-                {user.role ? user.role.toUpperCase() : 'CUSTOMER'}
+              <ProfilePictureUpload
+                currentAvatar={user?.avatar}
+                userName={fullName}
+                userInitial={getAvatarLetter()}
+                onAvatarChange={(avatarPath) => {
+                  const updatedUser = { ...user, avatar: avatarPath };
+                  setUser(updatedUser);
+                  const token = getAuthToken();
+                  if (token) {
+                    setAuthCookies(token, updatedUser);
+                  }
+                  setAvatarSuccess('Profile picture updated successfully!');
+                  setTimeout(() => setAvatarSuccess(''), 3000);
+                }}
+                onError={(error) => {
+                  setAvatarError(error);
+                  setTimeout(() => setAvatarError(''), 4000);
+                }}
+              />
+            </div>
+
+            {/* User Info Section */}
+            <div className="flex flex-col justify-center">
+              <p className="text-3xl font-bold text-gray-900">{fullName}</p>
+              <p className="text-gray-600 mt-1">{user?.email}</p>
+              <span className="inline-block mt-4 px-3 py-1 bg-amber-200 text-amber-900 rounded-full text-sm font-semibold w-fit">
+                {user?.role ? user.role.toUpperCase() : 'CUSTOMER'}
               </span>
             </div>
           </div>
@@ -167,7 +230,7 @@ export default function ProfilePage() {
         {/* Profile Information */}
         <div className="bg-white rounded-lg shadow p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">📋 Account Information</h2>
+            <h2 className="text-2xl font-bold text-gray-900"> Account Information</h2>
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -180,17 +243,31 @@ export default function ProfilePage() {
 
           {isEditing ? (
             // Edit Form
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Full Name <span className="text-red-500">*</span>
+                  First Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  value={editData.name}
+                  name="firstName"
+                  value={editData.firstName}
                   onChange={handleInputChange}
-                  placeholder="Enter your full name"
+                  placeholder="Enter your first name"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Last Name <span className="text-gray-500">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={editData.lastName}
+                  onChange={handleInputChange}
+                  placeholder="Enter your last name"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -215,56 +292,59 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="tel"
-                  name="phone"
-                  value={editData.phone}
+                  name="phoneNumber"
+                  value={editData.phoneNumber}
                   onChange={handleInputChange}
-                  placeholder="Enter your phone number"
+                  placeholder="Enter your Nepal mobile number (10 digits)"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-4 mt-6 md:col-span-2">
                 <button
                   onClick={handleSaveChanges}
                   disabled={saving}
                   className="flex-1 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold disabled:bg-gray-400"
                 >
-                  {saving ? '⏳ Saving...' : '✓ Save Changes'}
+                  {saving ? ' Saving...' : ' Save Changes'}
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="flex-1 px-4 py-3 bg-gray-300 text-gray-900 rounded-lg hover:bg-gray-400 transition font-semibold"
+                  disabled={saving}
+                  className="flex-1 px-4 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition font-semibold disabled:bg-gray-400"
                 >
-                  Cancel
+                  ✕ Cancel
                 </button>
               </div>
             </div>
           ) : (
             // Display Information
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-sm text-gray-600 font-semibold mb-1">FIRST NAME</p>
+                <p className="text-lg text-gray-900 font-semibold">{user?.firstName || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-semibold mb-1">LAST NAME</p>
+                <p className="text-lg text-gray-900 font-semibold">{user?.lastName || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-semibold mb-1">EMAIL ADDRESS</p>
+                <p className="text-lg text-gray-900 font-semibold">{user?.email}</p>
+              </div>
+              {user?.phoneNumber && (
                 <div>
-                  <p className="text-sm text-gray-600 font-semibold mb-1">FULL NAME</p>
-                  <p className="text-lg text-gray-900 font-semibold">{user.name}</p>
+                  <p className="text-sm text-gray-600 font-semibold mb-1">PHONE NUMBER</p>
+                  <p className="text-lg text-gray-900 font-semibold">{user.phoneNumber}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-semibold mb-1">EMAIL ADDRESS</p>
-                  <p className="text-lg text-gray-900 font-semibold">{user.email}</p>
-                </div>
-                {user.phone && (
-                  <div>
-                    <p className="text-sm text-gray-600 font-semibold mb-1">PHONE NUMBER</p>
-                    <p className="text-lg text-gray-900 font-semibold">{user.phone}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm text-gray-600 font-semibold mb-1">MEMBER SINCE</p>
-                  <p className="text-lg text-gray-900 font-semibold">
-                    {user.createdAt
-                      ? new Date(user.createdAt).toLocaleDateString()
-                      : 'Not available'}
-                  </p>
-                </div>
+              )}
+              <div>
+                <p className="text-sm text-gray-600 font-semibold mb-1">MEMBER SINCE</p>
+                <p className="text-lg text-gray-900 font-semibold">
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : 'Not available'}
+                </p>
               </div>
             </div>
           )}
@@ -272,7 +352,7 @@ export default function ProfilePage() {
 
         {/* Account Security */}
         <div className="bg-white rounded-lg shadow p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">🔒 Account Security</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"> Account Security</h2>
 
           <div className="space-y-4">
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -295,46 +375,46 @@ export default function ProfilePage() {
 
         {/* Quick Links */}
         <div className="bg-white rounded-lg shadow p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">🔗 Quick Links</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"> Quick Links</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
               href="/user/dashboard"
               className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition"
             >
-              <p className="font-semibold text-blue-900">📊 Dashboard</p>
+              <p className="font-semibold text-blue-900"> Dashboard</p>
               <p className="text-sm text-blue-700">View your dashboard overview</p>
             </Link>
             <Link
-              href="/user/parcels"
+              href="/booking"
               className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition"
             >
-              <p className="font-semibold text-green-900">📦 My Parcels</p>
-              <p className="text-sm text-green-700">View all your parcels</p>
+              <p className="font-semibold text-green-900"> Book Parcel</p>
+              <p className="text-sm text-green-700">Book a new parcel</p>
             </Link>
             <Link
-              href="/user/create-parcel"
-              className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition"
-            >
-              <p className="font-semibold text-amber-900">✚ Create Parcel</p>
-              <p className="text-sm text-amber-700">Book a new parcel</p>
-            </Link>
-            <Link
-              href="/user/track"
+              href="/track"
               className="p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition"
             >
-              <p className="font-semibold text-purple-900">🔍 Track Parcel</p>
+              <p className="font-semibold text-purple-900"> Track Parcel</p>
               <p className="text-sm text-purple-700">Track by tracking ID</p>
+            </Link>
+            <Link
+              href="/user/dashboard"
+              className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition"
+            >
+              <p className="font-semibold text-amber-900"> My Parcels</p>
+              <p className="text-sm text-amber-700">View all your parcels</p>
             </Link>
           </div>
         </div>
 
         {/* Danger Zone */}
         <div className="bg-red-50 rounded-lg shadow p-8 border border-red-200">
-          <h2 className="text-2xl font-bold text-red-900 mb-6">⚠️ Danger Zone</h2>
+          <h2 className="text-2xl font-bold text-red-900 mb-6"> Danger Zone</h2>
 
           <button className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold">
-            🗑️ Delete Account
+             Delete Account
           </button>
           <p className="text-sm text-red-700 mt-2">
             Once you delete your account, there is no going back. Please be certain.

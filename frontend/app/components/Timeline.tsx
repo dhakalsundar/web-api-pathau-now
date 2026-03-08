@@ -15,13 +15,13 @@ interface TimelineProps {
 export default function Timeline({ events, currentStatus }: TimelineProps) {
   const statusSteps = ['PENDING', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
   const statusEmojis: { [key: string]: string } = {
-    PENDING: '📦',
-    PICKED_UP: '🎯',
-    IN_TRANSIT: '🚚',
-    OUT_FOR_DELIVERY: '🚲',
-    DELIVERED: '✅',
-    FAILED: '❌',
-    CANCELLED: '🛑'
+    PENDING: '',
+    PICKED_UP: '',
+    IN_TRANSIT: '',
+    OUT_FOR_DELIVERY: '',
+    DELIVERED: '',
+    FAILED: '',
+    CANCELLED: ''
   };
 
   const getStatusColor = (status: string) => {
@@ -110,7 +110,7 @@ export default function Timeline({ events, currentStatus }: TimelineProps) {
                         <h4 className="font-bold text-gray-900">{event.status.replace('_', ' ')}</h4>
                         <p className="text-sm text-gray-600 mt-1">{event.message}</p>
                         {event.location && (
-                          <p className="text-xs text-gray-500 mt-1">📍 {event.location}</p>
+                          <p className="text-xs text-gray-500 mt-1"> {event.location}</p>
                         )}
                       </div>
                       <p className="text-xs text-gray-500 whitespace-nowrap">

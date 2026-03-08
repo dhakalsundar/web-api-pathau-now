@@ -86,7 +86,7 @@ export default function CustomerRegisterPage() {
         role: 'CUSTOMER',
       });
 
-      setSuccess('✅ Account created successfully! Redirecting to login...');
+      setSuccess(' Account created successfully! Redirecting to login...');
       
       setTimeout(() => {
         router.push('/login/customer');
@@ -109,7 +109,7 @@ export default function CustomerRegisterPage() {
             {/* Header */}
             <div className="mb-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-2xl">👤</span>
+                <span className="text-white font-bold text-2xl"></span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900">Create Your Account</h1>
               <p className="text-gray-600 mt-2">Start booking and tracking shipments with PathauNow</p>
@@ -118,7 +118,7 @@ export default function CustomerRegisterPage() {
             {/* Error Message */}
             {error && (
               <div className="mb-6 bg-red-50 border-2 border-red-300 rounded-lg p-4 text-red-700 font-semibold text-sm">
-                ❌ {error}
+                 {error}
               </div>
             )}
 
@@ -222,7 +222,7 @@ export default function CustomerRegisterPage() {
                 disabled={loading}
                 className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
-                {loading ? '⏳ Creating account...' : '📦 Create Account'}
+                {loading ? ' Creating account...' : ' Create Account'}
               </button>
             </form>
 

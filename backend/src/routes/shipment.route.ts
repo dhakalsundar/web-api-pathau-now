@@ -10,7 +10,7 @@ const router = Router();
 // Public - Tracking (no authentication required)
 router.get('/track/:trackingNumber', asyncHandler((req, res) => ShipmentController.publicTrack(req, res)));
 
-// Protected - Customer shipment routes
+// Protected - Customer parcel routes
 router.post(
   '/',
   authenticate,

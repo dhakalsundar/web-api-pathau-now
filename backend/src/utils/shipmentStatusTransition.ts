@@ -3,15 +3,17 @@
  * Defines allowed status transitions for shipments
  */
 
-export type ShipmentStatus = 'CREATED' | 'ASSIGNED' | 'PICKED' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
+export type ShipmentStatus = 'PENDING' | 'ASSIGNED' | 'PICKED_UP' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'FAILED' | 'CANCELLED';
 
 // Define allowed transitions: currentStatus -> [allowedNextStatuses]
 const ALLOWED_TRANSITIONS: Record<ShipmentStatus, ShipmentStatus[]> = {
-  CREATED: ['ASSIGNED', 'CANCELLED'],
-  ASSIGNED: ['PICKED', 'CANCELLED'],
-  PICKED: ['IN_TRANSIT', 'CANCELLED'],
-  IN_TRANSIT: ['DELIVERED', 'CANCELLED'],
+  PENDING: ['ASSIGNED', 'CANCELLED'],
+  ASSIGNED: ['PICKED_UP', 'CANCELLED'],
+  PICKED_UP: ['IN_TRANSIT', 'CANCELLED'],
+  IN_TRANSIT: ['OUT_FOR_DELIVERY', 'CANCELLED'],
+  OUT_FOR_DELIVERY: ['DELIVERED', 'FAILED', 'CANCELLED'],
   DELIVERED: [], // Terminal state, no transitions allowed
+  FAILED: ['PENDING', 'CANCELLED'], // Can retry or cancel
   CANCELLED: [], // Terminal state, no transitions allowed
 };
 

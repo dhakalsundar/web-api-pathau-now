@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { shipmentService } from '@/app/lib/services';
+import { parcelService } from '@/app/lib/services';
 
 interface Shipment {
   _id: string;
@@ -47,7 +47,7 @@ export default function MyParcelsPage() {
     try {
       setLoading(true);
 
-      const response = await shipmentService.getUserShipments({
+      const response = await parcelService.getUserParcels({
         page,
         limit,
         status: filterStatus || undefined,
@@ -91,15 +91,15 @@ export default function MyParcelsPage() {
   const getParcelTypeIcon = (parcelType?: string) => {
     switch (parcelType) {
       case 'DOCUMENT':
-        return '📄';
+        return '';
       case 'FOOD':
-        return '🍱';
+        return '';
       case 'FRAGILE':
-        return '🥚';
+        return '';
       case 'HEAVY':
-        return '💪';
+        return '';
       default:
-        return '📦';
+        return '';
     }
   };
 
@@ -125,13 +125,13 @@ export default function MyParcelsPage() {
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">📦 My Parcels</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2"> My Parcels</h1>
         <p className="text-gray-600">View and manage all your parcels</p>
       </div>
 
       {error && (
         <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p className="text-red-700 font-medium">❌ {error}</p>
+          <p className="text-red-700 font-medium"> {error}</p>
         </div>
       )}
 
@@ -189,7 +189,7 @@ export default function MyParcelsPage() {
         <div className="text-center py-20">
           <div className="inline-block">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
-            <p className="text-xl text-gray-600">⏳ Loading parcels...</p>
+            <p className="text-xl text-gray-600"> Loading parcels...</p>
           </div>
         </div>
       ) : filteredParcels.length > 0 ? (
@@ -239,7 +239,7 @@ export default function MyParcelsPage() {
                     <td className="py-4 px-6 text-sm text-gray-700">
                       {parcel.deliveryType || '-'}
                     </td>
-                    <td className="py-4 px-6 font-semibold text-gray-900">৳{parcel.price}</td>
+                    <td className="py-4 px-6 font-semibold text-gray-900">Rs{parcel.price}</td>
                     <td className="py-4 px-6 text-sm text-gray-600">{formatDate(parcel.createdAt)}</td>
                     <td className="py-4 px-6">
                       <Link
@@ -265,7 +265,7 @@ export default function MyParcelsPage() {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-4xl mb-4">📭</p>
+          <p className="text-4xl mb-4"></p>
           <p className="text-xl text-gray-600 mb-6">
             {searchTerm ? 'No parcels match your search' : 'No parcels found'}
           </p>

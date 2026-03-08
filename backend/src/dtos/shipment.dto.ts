@@ -1,5 +1,10 @@
 import z from 'zod';
 
+// Nepal phone number validation: 10 digits starting with 98 or 97
+const nepaliPhoneNumber = z.string()
+  .regex(/^(\+977)?9[78]\d{8}$/, "Invalid Nepal phone number. Must be 10 digits starting with 98 or 97")
+  .optional();
+
 export const ShipmentEventDTO = z.object({
   status: z.string().min(1),
   message: z.string().optional(),
@@ -13,12 +18,12 @@ export const CreateShipmentDTO = z.object({
   sender: z.object({ 
     name: z.string().optional(), 
     address: z.string().optional(),
-    phoneNumber: z.string().optional()
+    phoneNumber: nepaliPhoneNumber
   }).optional(),
   recipient: z.object({ 
     name: z.string().optional(), 
     address: z.string().optional(),
-    phoneNumber: z.string().optional()
+    phoneNumber: nepaliPhoneNumber
   }).optional(),
   weight: z.number().optional(),
   price: z.number().optional(),

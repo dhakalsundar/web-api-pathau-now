@@ -75,7 +75,7 @@ export default function CreateUserPage() {
       await authService.createUserByAdmin(formDataObj);
 
       // Show success message and redirect
-      setSuccess('✅ User created successfully! Redirecting...');
+      setSuccess(' User created successfully! Redirecting...');
       setTimeout(() => {
         router.push('/admin/users');
       }, 1500);
@@ -112,7 +112,7 @@ export default function CreateUserPage() {
             {/* Error Message */}
             {error && (
               <div className="mb-6 bg-red-50 border-2 border-red-300 rounded-lg p-4 text-red-700 font-semibold">
-                ❌ {error}
+                 {error}
               </div>
             )}
 
@@ -167,7 +167,7 @@ export default function CreateUserPage() {
                       placeholder="Enter email"
                     />
                     {getFieldError('email') && (
-                      <p className="text-red-600 text-sm mt-1 font-medium">❌ {getFieldError('email')}</p>
+                      <p className="text-red-600 text-sm mt-1 font-medium"> {getFieldError('email')}</p>
                     )}
                   </div>
 
@@ -188,7 +188,7 @@ export default function CreateUserPage() {
                       <option value="ADMIN">Admin</option>
                     </select>
                     {getFieldError('role') && (
-                      <p className="text-red-600 text-sm mt-1 font-medium">❌ {getFieldError('role')}</p>
+                      <p className="text-red-600 text-sm mt-1 font-medium"> {getFieldError('role')}</p>
                     )}
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export default function CreateUserPage() {
                       placeholder="Enter password (min 6 chars)"
                     />
                     {getFieldError('password') && (
-                      <p className="text-red-600 text-sm mt-1 font-medium">❌ {getFieldError('password')}</p>
+                      <p className="text-red-600 text-sm mt-1 font-medium"> {getFieldError('password')}</p>
                     )}
                   </div>
 
@@ -232,7 +232,7 @@ export default function CreateUserPage() {
                       placeholder="Confirm password"
                     />
                     {getFieldError('confirmPassword') && (
-                      <p className="text-red-600 text-sm mt-1 font-medium">❌ {getFieldError('confirmPassword')}</p>
+                      <p className="text-red-600 text-sm mt-1 font-medium"> {getFieldError('confirmPassword')}</p>
                     )}
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export default function CreateUserPage() {
                       placeholder="Enter first name"
                     />
                     {getFieldError('firstName') && (
-                      <p className="text-red-600 text-sm mt-1 font-medium">❌ {getFieldError('firstName')}</p>
+                      <p className="text-red-600 text-sm mt-1 font-medium"> {getFieldError('firstName')}</p>
                     )}
                   </div>
 
@@ -276,7 +276,7 @@ export default function CreateUserPage() {
                       placeholder="Enter last name"
                     />
                     {getFieldError('lastName') && (
-                      <p className="text-red-600 text-sm mt-1 font-medium">❌ {getFieldError('lastName')}</p>
+                      <p className="text-red-600 text-sm mt-1 font-medium"> {getFieldError('lastName')}</p>
                     )}
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export default function CreateUserPage() {
                     placeholder="Enter phone number"
                   />
                   {getFieldError('phoneNumber') && (
-                    <p className="text-red-600 text-sm mt-1 font-medium">❌ {getFieldError('phoneNumber')}</p>
+                    <p className="text-red-600 text-sm mt-1 font-medium"> {getFieldError('phoneNumber')}</p>
                   )}
                 </div>
 
@@ -306,7 +306,7 @@ export default function CreateUserPage() {
                     disabled={loading}
                     className="flex-1 px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? '⏳ Creating...' : '✅ Create User'}
+                    {loading ? ' Creating...' : ' Create User'}
                   </button>
                   <Link
                     href="/admin/users"

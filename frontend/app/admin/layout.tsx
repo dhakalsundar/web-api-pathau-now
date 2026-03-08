@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import SidebarWithRoutes from '@/app/components/SidebarWithRoutes';
+import { readAuthFromCookies } from '@/lib/cookies';
 
 interface SidebarItem {
   label: string;
@@ -17,41 +18,55 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    // Ensure we're on client side
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     // Allow login page to be accessed without authentication
-    if (typeof window !== 'undefined' && window.location.pathname === '/admin/login') {
+    if (pathname === '/login/admin') {
       setLoading(false);
       return;
     }
 
-    if (!token || !userData) {
-      router.push('/admin/login');
+    // Check authentication from cookies
+    const { token, user: cookieUser } = readAuthFromCookies();
+
+    if (!token || !cookieUser) {
+      router.push('/login/admin');
       return;
     }
 
     try {
-      const parsedUser = JSON.parse(userData);
-      
       // Check if user is admin
-      if (parsedUser.role !== 'admin' && parsedUser.role !== 'ADMIN') {
-        router.push('/');
+      const role = cookieUser.role?.toUpperCase();
+      if (role !== 'ADMIN' && role !== 'STAFF') {
+        console.log(' Non-admin user, redirecting:', { role });
+        
+        // Redirect to appropriate dashboard based on role
+        if (role === 'RIDER') {
+          router.push('/rider/dashboard');
+        } else if (role === 'CUSTOMER') {
+          router.push('/user/dashboard');
+        } else {
+          router.push('/login');
+        }
         return;
       }
 
-      setUser(parsedUser);
+      setUser(cookieUser);
     } catch (error) {
-      router.push('/admin/login');
+      console.error('Error processing admin auth:', error);
+      router.push('/login/admin');
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, pathname]);
 
   if (loading) {
     return (
@@ -64,9 +79,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  // Check if this is the login page
-  if (typeof window !== 'undefined' && window.location.pathname === '/admin/login') {
+  // Show login page without sidebar
+  if (pathname === '/login/admin') {
     return <>{children}</>;
+  }
+
+  // If no user data after loading (shouldn't reach here, but safety check)
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   // Define sidebar items
@@ -74,22 +100,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     {
       label: 'Dashboard',
       href: '/admin/dashboard',
-      icon: '📊',
+      icon: '',
     },
     {
       label: 'Users',
       href: '/admin/users',
-      icon: '👥',
+      icon: '',
     },
     {
-      label: 'Shipments',
-      href: '/admin/shipments',
-      icon: '📦',
+      label: 'Parcels',
+      href: '/admin/parcels',
+      icon: '',
     },
     {
       label: 'Riders',
       href: '/admin/riders',
-      icon: '🏍️',
+      icon: '',
     },
   ];
 
@@ -100,6 +126,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         items={sidebarItems}
         userRole={user?.role?.toUpperCase() || 'ADMIN'}
         userName={`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Admin User'}
+        userAvatar={user?.avatar}
       />
 
       {/* Main Content Area - Adjust margin based on sidebar */}

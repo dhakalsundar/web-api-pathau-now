@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { riderService } from '@/app/lib/services';
+import NotificationPanel from '../_components/NotificationPanel';
 
 interface Rider {
   _id: string;
@@ -19,7 +20,7 @@ interface Rider {
 interface Shipment {
   _id: string;
   trackingNumber: string;
-  status: 'PENDING' | 'PICKED_UP' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'FAILED' | 'CANCELLED';
+  status: 'PENDING' | 'ASSIGNED' | 'PICKED_UP' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'FAILED' | 'CANCELLED';
   sender: { name: string; phone?: string };
   recipient: { name: string; phone?: string; address?: string };
   price: number;
@@ -52,7 +53,7 @@ export default function RiderDashboard() {
       const [riderRes, statsRes, shipmentsRes] = await Promise.all([
         riderService.getCurrentRider(),
         riderService.getMyStats(),
-        riderService.getMyAssignedShipments({ page: 1, limit: 5 }),
+        riderService.getMyAssignedParcels({ page: 1, limit: 5 }),
       ]);
 
       setRider(riderRes.data);
@@ -66,7 +67,7 @@ export default function RiderDashboard() {
       setRecentDeliveries(deliveriesData);
       setError('');
     } catch (err: any) {
-      console.error('❌ Error fetching dashboard:', err);
+      console.error(' Error fetching dashboard:', err);
       setError(err.response?.data?.message || 'Failed to load dashboard');
     } finally {
       setLoading(false);
@@ -95,28 +96,30 @@ export default function RiderDashboard() {
       case 'OFFLINE':
         return '⚫';
       default:
-        return '❓';
+        return '';
     }
   };
 
   const getDeliveryStatusIcon = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return '⏳';
+        return '';
+      case 'ASSIGNED':
+        return '';
       case 'PICKED_UP':
-        return '📦';
+        return '';
       case 'IN_TRANSIT':
-        return '🚚';
+        return '';
       case 'OUT_FOR_DELIVERY':
-        return '🚴';
+        return '';
       case 'DELIVERED':
-        return '✅';
+        return '';
       case 'FAILED':
-        return '❌';
+        return '';
       case 'CANCELLED':
-        return '🚫';
+        return '';
       default:
-        return '📦';
+        return '';
     }
   };
 
@@ -146,16 +149,19 @@ export default function RiderDashboard() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">🏍️ Rider Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Here's your delivery overview</p>
+        {/* Header with Notification Bell */}
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2"> Rider Dashboard</h1>
+            <p className="text-gray-600">Welcome back! Here's your delivery overview</p>
+          </div>
+          <NotificationPanel autoRefresh={true} refetchInterval={10000} />
         </div>
 
         {/* Error Alert */}
         {error && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-            <p className="text-red-700 font-medium">❌ {error}</p>
+            <p className="text-red-700 font-medium"> {error}</p>
           </div>
         )}
 
@@ -167,11 +173,11 @@ export default function RiderDashboard() {
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">{rider.name}</h2>
                   <div className="space-y-1">
-                    <p className="text-gray-700">📱 {rider.phoneNumber}</p>
-                    {rider.email && <p className="text-gray-700">📧 {rider.email}</p>}
+                    <p className="text-gray-700"> {rider.phoneNumber}</p>
+                    {rider.email && <p className="text-gray-700"> {rider.email}</p>}
                     {rider.vehicleType && (
                       <p className="text-gray-700">
-                        🚗 {rider.vehicleType} {rider.vehicleNumber && `- ${rider.vehicleNumber}`}
+                         {rider.vehicleType} {rider.vehicleNumber && `- ${rider.vehicleNumber}`}
                       </p>
                     )}
                   </div>
@@ -206,7 +212,7 @@ export default function RiderDashboard() {
                     <p className="text-gray-600 text-sm font-semibold mb-2">Total Deliveries</p>
                     <p className="text-4xl font-bold text-green-600">{stats.totalDeliveries || 0}</p>
                   </div>
-                  <span className="text-3xl">🎯</span>
+                  <span className="text-3xl"></span>
                 </div>
                 <p className="text-xs text-green-700 mt-4">Lifetime achievements</p>
               </div>
@@ -220,7 +226,7 @@ export default function RiderDashboard() {
                       {stats.rating?.toFixed(1) || '0.0'}/5
                     </p>
                   </div>
-                  <span className="text-3xl">⭐</span>
+                  <span className="text-3xl"></span>
                 </div>
                 <p className="text-xs text-yellow-700 mt-4">Based on customer reviews</p>
               </div>
@@ -232,7 +238,7 @@ export default function RiderDashboard() {
                     <p className="text-gray-600 text-sm font-semibold mb-2">Assigned Parcels</p>
                     <p className="text-4xl font-bold text-blue-600">{stats.assignedParcelsCount || 0}</p>
                   </div>
-                  <span className="text-3xl">📦</span>
+                  <span className="text-3xl"></span>
                 </div>
                 <p className="text-xs text-blue-700 mt-4">Waiting for delivery</p>
               </div>
@@ -247,7 +253,7 @@ export default function RiderDashboard() {
                       {stats.status}
                     </p>
                   </div>
-                  <span className="text-3xl">🔔</span>
+                  <span className="text-3xl"></span>
                 </div>
                 <Link
                   href="/rider/profile"
@@ -261,20 +267,20 @@ export default function RiderDashboard() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">⚡ Quick Actions</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4"> Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link
                 href="/rider/deliveries"
                 className="p-4 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-lg hover:shadow-lg transition font-semibold flex items-center gap-3"
               >
-                <span className="text-2xl">🚚</span>
+                <span className="text-2xl"></span>
                 <span>View All Deliveries</span>
               </Link>
               <Link
                 href="/rider/performance"
                 className="p-4 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-lg hover:shadow-lg transition font-semibold flex items-center gap-3"
               >
-                <span className="text-2xl">📈</span>
+                <span className="text-2xl"></span>
                 <span>View Performance</span>
               </Link>
             </div>
@@ -283,7 +289,7 @@ export default function RiderDashboard() {
           {/* Recent Deliveries */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">📬 Recent Deliveries</h2>
+              <h2 className="text-2xl font-bold text-gray-900"> Recent Deliveries</h2>
               <Link href="/rider/deliveries" className="text-green-600 hover:text-green-700 font-semibold">
                 View All →
               </Link>
@@ -311,7 +317,7 @@ export default function RiderDashboard() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-gray-900">৳{delivery.price}</p>
+                          <p className="font-bold text-gray-900">Rs{delivery.price}</p>
                           <p className="text-xs text-gray-500">{formatDate(delivery.createdAt)}</p>
                           <p className="text-xs text-green-600 font-semibold mt-1">View →</p>
                         </div>
@@ -322,14 +328,14 @@ export default function RiderDashboard() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500">📭 No recent deliveries</p>
+                <p className="text-gray-500"> No recent deliveries</p>
               </div>
             )}
           </div>
 
           {/* Help Section */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-bold text-blue-900 mb-2">💡 Need Help?</h3>
+            <h3 className="text-lg font-bold text-blue-900 mb-2"> Need Help?</h3>
             <p className="text-blue-800 mb-4">
               For issues with deliveries or technical support, please contact the admin team.
             </p>

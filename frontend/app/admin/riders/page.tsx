@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExpandableRowSkeleton, ListItemSkeleton } from '@/app/components/Skeletons/SkeletonLoader';
-import { riderService, shipmentService } from '@/app/lib/services';
+import { riderService, adminService } from '@/app/lib/services';
 
 interface Rider {
   _id: string;
@@ -60,10 +60,18 @@ export default function AdminRidersPage() {
         response = await riderService.getAllRiders(1, 100, filterObj);
       }
 
-      setRiders(response.data || []);
+      // Extract riders from response - handle different response structures
+      const ridersList = Array.isArray(response?.data?.results) ? response.data.results : 
+                         Array.isArray(response?.data?.riders) ? response.data.riders :
+                         Array.isArray(response?.data) ? response.data : 
+                         Array.isArray(response?.results) ? response.results : 
+                         Array.isArray(response) ? response : [];
+      
+      setRiders(ridersList);
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load riders');
+      setRiders([]);
     } finally {
       setLoading(false);
     }
@@ -71,10 +79,16 @@ export default function AdminRidersPage() {
 
   const fetchShipments = async () => {
     try {
-      const response = await shipmentService.getAllShipments(1, 200, {});
-      setShipments(response.data || []);
+      const response = await adminService.getAllAdminParcels(1, 200, {});
+      // Defensive: Handle different response structures
+      const shipmentsList = Array.isArray(response) ? response : 
+                            Array.isArray(response?.data) ? response.data : 
+                            Array.isArray(response?.data?.results) ? response.data.results : 
+                            Array.isArray(response?.results) ? response.results : [];
+      setShipments(shipmentsList);
     } catch (err: any) {
-      console.error('Failed to load shipments');
+      console.error('Failed to load parcels');
+      setShipments([]);
     }
   };
 
@@ -82,7 +96,7 @@ export default function AdminRidersPage() {
     try {
       setActionLoading((prev) => ({ ...prev, [riderId]: true }));
       await riderService.updateRider(riderId, { isActive: !currentStatus });
-      setSuccess(`✅ Rider ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+      setSuccess(` Rider ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
       fetchRiders();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -100,7 +114,7 @@ export default function AdminRidersPage() {
       await riderService.updateRider(riderId, {
         assignedParcels: [...currentAssigned, shipmentId]
       });
-      setSuccess('✅ Shipment assigned successfully');
+      setSuccess(' Shipment assigned successfully');
       fetchRiders();
       setExpandedRiderId(null);
       setTimeout(() => setSuccess(''), 3000);
@@ -137,30 +151,18 @@ export default function AdminRidersPage() {
     }
   };
 
-  const sidebarItems = [
-    { label: 'Dashboard', href: '/admin/dashboard', icon: '📊', badge: 0 },
-    { label: 'Shipments', href: '/admin/shipments', icon: '📦', badge: 0 },
-    { label: 'Riders', href: '/admin/riders', icon: '🚴', badge: 0 },
-    { label: 'Users', href: '/admin/users', icon: '👥', badge: 0 },
-    { label: 'Analytics', href: '/admin/analytics', icon: '📈', badge: 0 },
-  ];
-
-  const filteredRiders = riders.filter(r => {
+  const filteredRiders = Array.isArray(riders) ? riders.filter(r => {
     if (filters.search) {
       return r.name.toLowerCase().includes(filters.search.toLowerCase()) ||
              r.phoneNumber.includes(filters.search);
     }
     return true;
-  });
+  }) : [];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar items={sidebarItems} />
-
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+    <div className="p-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-4xl font-bold text-gray-900">🚴 Riders</h1>
               <p className="text-gray-600">Manage delivery partners</p>
@@ -183,7 +185,7 @@ export default function AdminRidersPage() {
           {/* Error Message */}
           {error && (
             <div className="mb-6 bg-red-50 border-2 border-red-300 rounded-lg p-4 text-red-700 font-semibold">
-              ❌ {error}
+               {error}
             </div>
           )}
 
@@ -221,8 +223,8 @@ export default function AdminRidersPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
                   <option value="">All</option>
-                  <option value="true">✅ Active</option>
-                  <option value="false">❌ Inactive</option>
+                  <option value="true"> Active</option>
+                  <option value="false"> Inactive</option>
                 </select>
               </div>
               <div className="flex items-end">
@@ -247,7 +249,7 @@ export default function AdminRidersPage() {
             </div>
           ) : filteredRiders.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-              <p className="text-xl text-gray-600">📭 No riders found</p>
+              <p className="text-xl text-gray-600"> No riders found</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -290,7 +292,7 @@ export default function AdminRidersPage() {
                             ? 'bg-green-100 text-green-800 border border-green-300'
                             : 'bg-red-100 text-red-800 border border-red-300'
                         }`}>
-                          {rider.isActive ? '✅ Active' : '❌ Inactive'}
+                          {rider.isActive ? ' Active' : ' Inactive'}
                         </span>
                       </div>
 
@@ -307,7 +309,7 @@ export default function AdminRidersPage() {
                       <div className="grid md:grid-cols-2 gap-8">
                         {/* Rider Details */}
                         <div>
-                          <h3 className="font-bold text-gray-900 mb-4">📋 Details</h3>
+                          <h3 className="font-bold text-gray-900 mb-4"> Details</h3>
                           <dl className="space-y-3">
                             <div>
                               <dt className="text-xs font-semibold text-gray-600">Vehicle Type</dt>
@@ -347,15 +349,15 @@ export default function AdminRidersPage() {
                                 }`}
                               >
                                 {actionLoading[rider._id]
-                                  ? '⏳ Updating...'
+                                  ? ' Updating...'
                                   : rider.isActive
-                                  ? '❌ Deactivate'
-                                  : '✅ Activate'}
+                                  ? ' Deactivate'
+                                  : ' Activate'}
                               </button>
                             </div>
 
                             {/* Assign Shipment */}
-                            {shipments.length > 0 && (
+                            {Array.isArray(shipments) && shipments.length > 0 && (
                               <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                   Assign Shipment
@@ -371,7 +373,7 @@ export default function AdminRidersPage() {
                                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50"
                                 >
                                   <option value="">-- Select Shipment --</option>
-                                  {shipments
+                                  {Array.isArray(shipments) && shipments
                                     .filter(s => !s.riderId) // Only unassigned shipments
                                     .map((shipment) => (
                                       <option key={shipment._id} value={shipment._id}>
@@ -390,7 +392,7 @@ export default function AdminRidersPage() {
                               onClick={() => router.push(`/admin/riders/${rider._id}`)}
                               className="w-full px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-medium"
                             >
-                              ✏️ Edit Rider
+                               Edit Rider
                             </button>
                           </div>
                         </div>
@@ -402,7 +404,6 @@ export default function AdminRidersPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+  
   );
 }

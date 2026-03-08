@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { shipmentService } from '@/app/lib/services';
+import { parcelService } from '@/app/lib/services';
+import UserNotificationPanel from '../_components/UserNotificationPanel';
 
 interface DashboardStats {
   totalParcels: number;
@@ -33,11 +34,13 @@ export default function UserDashboard() {
       try {
         setLoading(true);
 
-        // Fetch user's shipments
-        const response = await shipmentService.getUserShipments({
+        // Fetch user's parcels
+        const response = await parcelService.getUserParcels({
           page: 1,
           limit: 50,
         });
+
+        
 
         const shipments = Array.isArray(response.data) 
           ? response.data 
@@ -108,14 +111,17 @@ export default function UserDashboard() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">📊 My Dashboard</h1>
-        <p className="text-gray-600">Welcome! Here's your parcel overview</p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2"> My Dashboard</h1>
+          <p className="text-gray-600">Welcome! Here's your parcel overview</p>
+        </div>
+        <UserNotificationPanel autoRefresh={true} refetchInterval={15000} />
       </div>
 
       {error && (
         <div className="mb-8 bg-red-50 border-2 border-red-300 rounded-lg p-4 text-red-700 font-semibold">
-          ❌ {error}
+          {error}
         </div>
       )}
 
@@ -123,7 +129,7 @@ export default function UserDashboard() {
         <div className="text-center py-20">
           <div className="inline-block">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
-            <p className="text-xl text-gray-600">⏳ Loading dashboard...</p>
+            <p className="text-xl text-gray-600"> Loading dashboard...</p>
           </div>
         </div>
       ) : (
@@ -137,9 +143,9 @@ export default function UserDashboard() {
                   <p className="text-gray-600 text-sm font-semibold mb-1">Total Parcels</p>
                   <p className="text-4xl font-bold text-blue-900">{stats.totalParcels}</p>
                 </div>
-                <span className="text-4xl">📦</span>
+                <span className="text-4xl"></span>
               </div>
-              <p className="text-xs text-blue-700 mt-4">All your shipments</p>
+              <p className="text-xs text-blue-700 mt-4">All your parcels</p>
             </div>
 
             {/* In Transit */}
@@ -149,7 +155,7 @@ export default function UserDashboard() {
                   <p className="text-gray-600 text-sm font-semibold mb-1">In Transit</p>
                   <p className="text-4xl font-bold text-yellow-900">{stats.inTransit}</p>
                 </div>
-                <span className="text-4xl">🚚</span>
+                <span className="text-4xl"></span>
               </div>
               <p className="text-xs text-yellow-700 mt-4">On the way to you</p>
             </div>
@@ -173,7 +179,7 @@ export default function UserDashboard() {
                   <p className="text-gray-600 text-sm font-semibold mb-1">Pending</p>
                   <p className="text-4xl font-bold text-red-900">{stats.pending}</p>
                 </div>
-                <span className="text-4xl">⏳</span>
+                <span className="text-4xl"></span>
               </div>
               <p className="text-xs text-red-700 mt-4">Waiting to be picked up</p>
             </div>
@@ -184,35 +190,35 @@ export default function UserDashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-gray-600 text-sm font-semibold mb-2">Total Amount Spent</p>
-                <p className="text-5xl font-bold text-amber-900">৳{stats.totalSpent.toFixed(2)}</p>
+                <p className="text-5xl font-bold text-amber-900">Rs{stats.totalSpent.toFixed(2)}</p>
               </div>
-              <span className="text-6xl">💳</span>
+              <span className="text-6xl"></span>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">🚀 Quick Actions</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4"> Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link
                 href="/user/create-parcel"
                 className="p-4 bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-lg hover:shadow-lg transition font-semibold flex items-center gap-3"
               >
-                <span className="text-2xl">✚</span>
+                <span className="text-2xl"></span>
                 <span>Create New Parcel</span>
               </Link>
               <Link
                 href="/user/parcels"
                 className="p-4 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-lg hover:shadow-lg transition font-semibold flex items-center gap-3"
               >
-                <span className="text-2xl">📋</span>
+                <span className="text-2xl"></span>
                 <span>View All Parcels</span>
               </Link>
               <Link
                 href="/user/track"
                 className="p-4 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-lg hover:shadow-lg transition font-semibold flex items-center gap-3"
               >
-                <span className="text-2xl">🔍</span>
+                <span className="text-2xl"></span>
                 <span>Track Parcel</span>
               </Link>
             </div>
@@ -221,7 +227,7 @@ export default function UserDashboard() {
           {/* Recent Parcels */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">📬 Recent Parcels</h2>
+              <h2 className="text-2xl font-bold text-gray-900"> Recent Parcels</h2>
               <Link href="/user/parcels" className="text-amber-600 hover:text-amber-700 font-semibold">
                 View All →
               </Link>
@@ -263,7 +269,7 @@ export default function UserDashboard() {
                             {parcel.status?.replace(/_/g, ' ')}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-gray-900">৳{parcel.price}</td>
+                        <td className="py-3 px-4 font-semibold text-gray-900">Rs{parcel.price}</td>
                         <td className="py-3 px-4 text-gray-600">{formatDate(parcel.createdAt)}</td>
                       </tr>
                     ))}
@@ -272,7 +278,7 @@ export default function UserDashboard() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg mb-4">📭 No parcels yet</p>
+                <p className="text-gray-500 text-lg mb-4"> No parcels yet</p>
                 <Link
                   href="/user/create-parcel"
                   className="inline-block px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold"

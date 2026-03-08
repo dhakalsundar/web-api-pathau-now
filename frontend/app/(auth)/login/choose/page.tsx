@@ -10,7 +10,7 @@ export default function LoginRoleChooser() {
   const roles = [
     {
       id: 'admin',
-      title: '🏢 Admin/Staff',
+      title: ' Admin/Staff',
       description: 'Manage operations, users, and shipments',
       color: 'from-blue-500 to-blue-600',
       textColor: 'text-blue-600',
@@ -19,7 +19,7 @@ export default function LoginRoleChooser() {
     },
     {
       id: 'rider',
-      title: '🏍️ Rider/Delivery Partner',
+      title: ' Rider/Delivery Partner',
       description: 'View and manage your assigned deliveries',
       color: 'from-green-500 to-green-600',
       textColor: 'text-green-600',
@@ -28,7 +28,7 @@ export default function LoginRoleChooser() {
     },
     {
       id: 'customer',
-      title: '👤 Customer/User',
+      title: ' Customer/User',
       description: 'Book parcels and track shipments',
       color: 'from-amber-500 to-amber-600',
       textColor: 'text-amber-600',

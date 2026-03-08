@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SidebarWithRoutes from '@/app/components/SidebarWithRoutes';
+import { getAuthToken, getUserDetails } from '@/lib/cookies';
 
 interface SidebarItem {
   label: string;
@@ -26,26 +27,34 @@ export default function UserLayout({ children }: UserLayoutProps) {
       return;
     }
 
-    // Check user data in localStorage (token is in cookies)
-    const userData = localStorage.getItem('user');
+    const token = getAuthToken();
+    const userData = getUserDetails();
 
-    console.log('Checking auth:', { hasUserData: !!userData });
+    console.log('Checking auth:', { hasUserData: !!userData, hasToken: !!token });
 
-    if (!userData) {
-      console.log('No user data, redirecting to login');
+    if (!userData || !token) {
+      console.log('No user auth, redirecting to login');
       router.push('/login');
       return;
     }
 
     try {
-      const parsedUser = JSON.parse(userData);
+      const parsedUser = userData;
       console.log('Parsed user:', parsedUser);
       
-      // Check if user is admin/staff (redirect to admin)
       const role = parsedUser.role?.toUpperCase();
+      
+      // Redirect admin/staff users to admin dashboard
       if (role === 'ADMIN' || role === 'STAFF') {
         console.log('Admin/Staff user, redirecting to admin dashboard');
         router.push('/admin/dashboard');
+        return;
+      }
+      
+      // Redirect rider users to rider dashboard
+      if (role === 'RIDER') {
+        console.log('Rider user, redirecting to rider dashboard');
+        router.push('/rider/dashboard');
         return;
       }
 
@@ -70,32 +79,37 @@ export default function UserLayout({ children }: UserLayoutProps) {
     );
   }
 
+  // Safety check: ensure only CUSTOMER users can access this layout
+  if (!user || user.role?.toUpperCase() !== 'CUSTOMER') {
+    return null;
+  }
+
   // Define sidebar items for customer
   const sidebarItems: SidebarItem[] = [
     {
       label: 'Dashboard',
       href: '/user/dashboard',
-      icon: '📊',
+      icon: '',
     },
     {
       label: 'My Parcels',
       href: '/user/my-parcels',
-      icon: '📦',
+      icon: '',
     },
     {
       label: 'Create Parcel',
       href: '/user/create-parcel',
-      icon: '✚',
+      icon: '',
     },
     {
       label: 'Track Parcel',
       href: '/user/track',
-      icon: '🔍',
+      icon: '',
     },
     {
       label: 'Profile',
       href: '/user/profile',
-      icon: '👤',
+      icon: '',
     },
   ];
 
@@ -104,8 +118,9 @@ export default function UserLayout({ children }: UserLayoutProps) {
       {/* Fixed Sidebar */}
       <SidebarWithRoutes
         items={sidebarItems}
-        userRole={user?.role || 'CUSTOMER'}
-        userName={user?.name || 'Customer'}
+        userRole={user?.role?.toUpperCase() || 'CUSTOMER'}
+        userName={`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Customer'}
+        userAvatar={user?.avatar}
       />
 
       {/* Main Content */}
@@ -114,7 +129,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
           <div className="px-8 py-4 flex items-center justify-between">
             <div></div>
             <div className="text-sm text-gray-600">
-              Welcome, <span className="font-semibold text-gray-900">{user?.name || 'Customer'}</span>
+              Welcome, <span className="font-semibold text-gray-900">{`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Customer'}</span>
             </div>
           </div>
         </div>

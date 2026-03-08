@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { shipmentService } from '@/app/lib/services';
+import { parcelService } from '@/app/lib/services';
 
 interface Shipment {
   _id: string;
@@ -65,8 +65,8 @@ export default function TrackParcelPage() {
       setError('');
       setSearched(true);
 
-      // Search for shipment by tracking number
-      const response = await shipmentService.getShipmentById(trackingId);
+      // Search for parcel by tracking number
+      const response = await parcelService.trackParcel(trackingId);
       setShipment(response.data);
     } catch (err: any) {
       console.error('Failed to track parcel:', err);
@@ -103,36 +103,36 @@ export default function TrackParcelPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return '⏳';
+        return '';
       case 'PICKED_UP':
-        return '📦';
+        return '';
       case 'IN_TRANSIT':
-        return '🚚';
+        return '';
       case 'OUT_FOR_DELIVERY':
-        return '🏃';
+        return '';
       case 'DELIVERED':
-        return '✅';
+        return '';
       case 'FAILED':
-        return '❌';
+        return '';
       case 'CANCELLED':
-        return '❌';
+        return '';
       default:
-        return '❓';
+        return '';
     }
   };
 
   const getParcelTypeIcon = (parcelType?: string) => {
     switch (parcelType) {
       case 'DOCUMENT':
-        return '📄';
+        return '';
       case 'FOOD':
-        return '🍱';
+        return '';
       case 'FRAGILE':
-        return '🥚';
+        return '';
       case 'HEAVY':
-        return '💪';
+        return '';
       default:
-        return '📦';
+        return '';
     }
   };
 
@@ -176,14 +176,14 @@ export default function TrackParcelPage() {
             disabled={loading}
             className="px-8 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold disabled:bg-gray-400"
           >
-            {loading ? '⏳ Tracking...' : '🔍 Track'}
+            {loading ? ' Tracking...' : ' Track'}
           </button>
         </form>
       </div>
 
       {error && (
         <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p className="text-red-700 font-medium">❌ {error}</p>
+          <p className="text-red-700 font-medium"> {error}</p>
         </div>
       )}
 
@@ -225,7 +225,7 @@ export default function TrackParcelPage() {
               <div className="flex flex-col justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-semibold mb-2">PRICE</p>
-                  <p className="text-4xl font-bold text-amber-900 mb-6">৳{shipment.price}</p>
+                  <p className="text-4xl font-bold text-amber-900 mb-6">Rs{shipment.price}</p>
                 </div>
 
                 <div className="space-y-3">
@@ -246,7 +246,7 @@ export default function TrackParcelPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* From */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">📤 From (Sender)</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4"> From (Sender)</h3>
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600">Name</p>
@@ -271,7 +271,7 @@ export default function TrackParcelPage() {
 
             {/* To */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">📥 To (Recipient)</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4"> To (Recipient)</h3>
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600">Name</p>
@@ -297,7 +297,7 @@ export default function TrackParcelPage() {
 
           {/* Timeline */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">📍 Journey Timeline</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-6"> Journey Timeline</h3>
 
             {shipment.events && shipment.events.length > 0 ? (
               <div className="relative">
@@ -322,7 +322,7 @@ export default function TrackParcelPage() {
                           <p className="text-gray-600 text-sm mt-1">{event.message}</p>
                         )}
                         {event.location && (
-                          <p className="text-gray-600 text-sm mt-1">📍 {event.location}</p>
+                          <p className="text-gray-600 text-sm mt-1"> {event.location}</p>
                         )}
                         <p className="text-xs text-gray-500 mt-2">{formatDate(event.timestamp)}</p>
                       </div>
@@ -341,7 +341,7 @@ export default function TrackParcelPage() {
               href="/user/parcels"
               className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-semibold text-center"
             >
-              📋 View All Parcels
+               View All Parcels
             </Link>
             <button
               onClick={() => {
@@ -352,25 +352,25 @@ export default function TrackParcelPage() {
               }}
               className="flex-1 px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition font-semibold"
             >
-              🔍 Track Another
+               Track Another
             </button>
           </div>
         </div>
       ) : searched && !loading ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-4xl mb-4">🔍</p>
+          <p className="text-4xl mb-4"></p>
           <p className="text-xl text-gray-600 mb-2">No parcel found</p>
           <p className="text-gray-500 mb-6">Please check your tracking ID and try again</p>
           <Link
             href="/user/parcels"
             className="inline-block px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold"
           >
-            📋 View My Parcels
+             View My Parcels
           </Link>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-4xl mb-4">📦</p>
+          <p className="text-4xl mb-4"></p>
           <p className="text-lg text-gray-600">Enter a tracking ID above to get started</p>
         </div>
       )}

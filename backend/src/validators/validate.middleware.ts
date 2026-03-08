@@ -30,14 +30,14 @@ export const validateBody = (schema: ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Log incoming request body for debugging
-      console.log('📝 [VALIDATE] Request body:', JSON.stringify(req.body, null, 2));
+      console.log(' [VALIDATE] Request body:', JSON.stringify(req.body, null, 2));
       
       await schema.parseAsync(req.body);
-      console.log('✅ [VALIDATE] Validation passed');
+      console.log(' [VALIDATE] Validation passed');
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        console.error('❌ [VALIDATE] Validation failed:');
+        console.error(' [VALIDATE] Validation failed:');
         error.issues.forEach(issue => {
           console.error(`   Field: ${issue.path.join('.')} | Message: ${issue.message} | Code: ${issue.code}`);
         });

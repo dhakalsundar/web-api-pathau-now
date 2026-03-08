@@ -36,7 +36,7 @@ export default function ViewUserPage() {
     return (
       <main className="overflow-y-auto">
         <div className="p-8 text-center">
-          <p className="text-xl text-gray-600">⏳ Loading user details...</p>
+          <p className="text-xl text-gray-600"> Loading user details...</p>
         </div>
       </main>
     );
@@ -54,13 +54,13 @@ export default function ViewUserPage() {
               >
                 ← Back to Users
               </Link>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">👤 View User</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2"> View User</h1>
               <p className="text-gray-600">User ID: {userId}</p>
             </div>
 
             {error && (
               <div className="mb-6 bg-red-50 border-2 border-red-300 rounded-lg p-4 text-red-700 font-semibold">
-                ❌ {error}
+                 {error}
               </div>
             )}
 
@@ -93,7 +93,7 @@ export default function ViewUserPage() {
                       <p className="text-gray-700">
                         <span className="font-semibold">Status:</span>{' '}
                         <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {user.isActive ? '✅ Active' : '❌ Inactive'}
+                          {user.isActive ? ' Active' : ' Inactive'}
                         </span>
                       </p>
                       <p className="text-gray-700">
@@ -109,7 +109,7 @@ export default function ViewUserPage() {
                     href={`/admin/users/${userId}/edit`}
                     className="flex-1 px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold text-center"
                   >
-                    ✏️ Edit User
+                     Edit User
                   </Link>
                   <Link
                     href="/admin/users"

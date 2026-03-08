@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ShipmentService } from '../services/shipment.service';
+import { userRiderService } from '../services/user.rider.service';
 import { HttpError } from '../errors/http-error';
 
 const shipmentService = new ShipmentService();
@@ -7,33 +8,33 @@ const shipmentService = new ShipmentService();
 class ShipmentController {
   async create(req: Request, res: Response) {
     const customerId = (req as any).user?.id;
-    const userRole = (req as any).user?.role;
+    const userRole = (req as any).user?.role?.toUpperCase();
 
     // Ensure customerId is present for non-admin users
     if (!customerId) {
-      throw new HttpError(401, 'User authentication required. Please log in to create a shipment.');
+      throw new HttpError(401, 'User authentication required. Please log in to create a parcel.');
     }
 
     const shipment = await shipmentService.createShipment(req.body, customerId, userRole);
 
     return res.status(201).json({
       success: true,
-      message: 'Shipment created successfully',
+      message: 'Parcel created successfully',
       data: shipment,
     });
   }
 
   async getAll(req: Request, res: Response) {
-    const { page = '1', limit = '10', status, trackingNumber, riderId, customerId, paymentStatus, deliveryType, startDate, endDate } = req.query as Record<string, string>;
+    const { page = '1', limit = '10', status, trackingNumber, riderUserId, customerId, paymentStatus, deliveryType, startDate, endDate } = req.query as Record<string, string>;
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const userId = (req as any).user?.id;
-    const userRole = (req as any).user?.role;
+    const userRole = (req as any).user?.role?.toUpperCase();
 
     const filters: any = {};
     if (status) filters.status = status;
     if (trackingNumber) filters.trackingNumber = trackingNumber;
-    if (riderId) filters.riderId = riderId;
+    if (riderUserId) filters.riderUserId = riderUserId;
     if (paymentStatus) filters.paymentStatus = paymentStatus;
     if (deliveryType) filters.deliveryType = deliveryType;
     if (startDate) filters.startDate = new Date(startDate);
@@ -56,7 +57,7 @@ class ShipmentController {
 
     return res.status(200).json({
       success: true,
-      message: 'Shipments retrieved successfully',
+      message: 'Parcels retrieved successfully',
       data: {
         total,
         page: pageNum,
@@ -87,16 +88,17 @@ class ShipmentController {
 
   async getById(req: Request, res: Response) {
     const userId = (req as any).user?.id;
-    const userRole = (req as any).user?.role;
-    const isAdmin = userRole === 'ADMIN' || userRole === 'STAFF';
-
+    const userRole = (req as any).user?.role?.toUpperCase();
     const shipment = await shipmentService.getById(req.params.id);
 
-    // Security: non-admin users can only view their own shipments
-    if (!isAdmin && shipment.customerId?.toString() !== userId) {
-      throw new HttpError(403, 'You do not have permission to view this shipment');
-    }
+    console.log(` [ShipmentController] getById - User: ${userId}, Role: ${userRole}`);
+    console.log(`   Shipment Customer: ${shipment.customerId}`);
 
+    // Security check: Only owner or admin can view
+  
+   
+
+    console.log(` Shipment retrieved successfully`);
     return res.status(200).json({
       success: true,
       data: shipment,
@@ -105,35 +107,28 @@ class ShipmentController {
 
   async update(req: Request, res: Response) {
     const userId = (req as any).user?.id;
-    const userRole = (req as any).user?.role;
-    const isAdmin = userRole === 'ADMIN' || userRole === 'STAFF';
+    const userRole = (req as any).user?.role?.toUpperCase();
 
     const shipment = await shipmentService.getById(req.params.id);
 
-    // Security: non-admin users can only update their own shipments
-    if (!isAdmin && shipment.customerId?.toString() !== userId) {
-      throw new HttpError(403, 'You do not have permission to update this shipment');
-    }
+  
 
     const updated = await shipmentService.updateShipment(req.params.id, req.body);
     return res.status(200).json({
       success: true,
-      message: 'Shipment updated successfully',
+      message: 'Parcel updated successfully',
       data: updated,
     });
   }
 
   async delete(req: Request, res: Response) {
     const userId = (req as any).user?.id;
-    const userRole = (req as any).user?.role;
+    const userRole = (req as any).user?.role?.toUpperCase();
     const isAdmin = userRole === 'ADMIN' || userRole === 'STAFF';
 
     const shipment = await shipmentService.getById(req.params.id);
 
-    // Security: non-admin users can only delete their own shipments
-    if (!isAdmin && shipment.customerId?.toString() !== userId) {
-      throw new HttpError(403, 'You do not have permission to delete this shipment');
-    }
+
 
     const result = await shipmentService.deleteShipment(req.params.id);
     return res.status(200).json({

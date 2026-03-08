@@ -6,7 +6,7 @@ import Navbar from '@/app/components/Navbar';
 import Timeline from '@/app/components/Timeline';
 import LoadingSkeleton from '@/app/components/LoadingSkeleton';
 import RiderInfoCard from '@/app/components/RiderInfoCard';
-import { shipmentService } from '@/app/lib/services';
+import { parcelService } from '@/app/lib/services';
 import Link from 'next/link';
 
 export default function TrackPage() {
@@ -20,11 +20,11 @@ export default function TrackPage() {
     const fetchShipment = async () => {
       try {
         setLoading(true);
-        const response = await shipmentService.trackShipment(trackingNumber);
+        const response = await parcelService.trackParcel(trackingNumber);
         setShipment(response.data);
         setError('');
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Shipment not found');
+        setError(err.response?.data?.message || 'Parcel not found');
       } finally {
         setLoading(false);
       }
@@ -47,14 +47,14 @@ export default function TrackPage() {
   };
 
   const statusEmojis: { [key: string]: string } = {
-    CREATED: '📦',
-    ASSIGNED: '🎯',
-    PICKED: '✅',
-    IN_TRANSIT: '🚚',
-    OUT_FOR_DELIVERY: '🚲',
-    DELIVERED: '✅',
-    FAILED: '❌',
-    CANCELLED: '🛑'
+    CREATED: '',
+    ASSIGNED: '',
+    PICKED: '',
+    IN_TRANSIT: '',
+    OUT_FOR_DELIVERY: '',
+    DELIVERED: '',
+    FAILED: '',
+    CANCELLED: ''
   };
 
   const getStatusDisplay = (status: string) => {
@@ -82,7 +82,7 @@ export default function TrackPage() {
 
         {error && (
           <div className="bg-red-50 border-2 border-red-300 rounded-lg p-8 text-center my-8">
-            <p className="text-2xl text-red-600 font-bold mb-2">❌ Shipment Not Found</p>
+            <p className="text-2xl text-red-600 font-bold mb-2"> Parcel Not Found</p>
             <p className="text-red-600 mb-6">{error}</p>
             <Link
               href="/"
@@ -95,7 +95,7 @@ export default function TrackPage() {
 
         {!loading && shipment && !error && (
           <div className="space-y-8">
-            {/* Shipment Header Card */}
+            {/* Parcel Header Card */}
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-lg">
               <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-8 text-white">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -109,7 +109,7 @@ export default function TrackPage() {
                 </div>
               </div>
 
-              {/* Shipment Details Grid */}
+              {/* Parcel Details Grid */}
               <div className="p-8">
                 {/* Row 1: Sender & Recipient */}
                 <div className="grid md:grid-cols-2 gap-6 mb-8 pb-8 border-b border-gray-200">
@@ -120,22 +120,22 @@ export default function TrackPage() {
                     <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
                       <p className="font-bold text-gray-900">{shipment.sender?.name || 'N/A'}</p>
                       {shipment.sender?.phone && (
-                        <p className="text-sm text-gray-600">📞 {shipment.sender.phone}</p>
+                        <p className="text-sm text-gray-600"> {shipment.sender.phone}</p>
                       )}
-                      <p className="text-sm text-gray-600">📍 {shipment.sender?.address || 'N/A'}</p>
+                      <p className="text-sm text-gray-600"> {shipment.sender?.address || 'N/A'}</p>
                     </div>
                   </div>
 
                   <div>
                     <p className="text-sm text-gray-600 font-semibold mb-3 flex items-center gap-2">
-                      <span>🎯</span> Recipient
+                      <span></span> Recipient
                     </p>
                     <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
                       <p className="font-bold text-gray-900">{shipment.recipient?.name || 'N/A'}</p>
                       {shipment.recipient?.phone && (
-                        <p className="text-sm text-gray-600">📞 {shipment.recipient.phone}</p>
+                        <p className="text-sm text-gray-600"> {shipment.recipient.phone}</p>
                       )}
-                      <p className="text-sm text-gray-600">📍 {shipment.recipient?.address || 'N/A'}</p>
+                      <p className="text-sm text-gray-600"> {shipment.recipient?.address || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
@@ -144,7 +144,7 @@ export default function TrackPage() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-gray-600 font-semibold mb-3 flex items-center gap-2">
-                      <span>📦</span> Parcel Details
+                      <span></span> Parcel Details
                     </p>
                     <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
                       {shipment.weight && (
@@ -154,7 +154,7 @@ export default function TrackPage() {
                       )}
                       {shipment.price && (
                         <p className="text-sm">
-                          <span className="text-gray-600">Price:</span> <span className="font-bold text-green-600">৳{shipment.price}</span>
+                          <span className="text-gray-600">Price:</span> <span className="font-bold text-green-600">Rs{shipment.price}</span>
                         </p>
                       )}
                     </div>
@@ -179,7 +179,7 @@ export default function TrackPage() {
 
                   <div>
                     <p className="text-sm text-gray-600 font-semibold mb-3 flex items-center gap-2">
-                      <span>📅</span> Booking Date
+                      <span></span> Booking Date
                     </p>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <p className="font-bold text-gray-900">
@@ -205,7 +205,7 @@ export default function TrackPage() {
               ) : (
                 <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span>🎯</span> Rider Information
+                    <span></span> Rider Information
                   </h3>
                   <p className="text-gray-500 text-center py-6">No rider assigned yet</p>
                 </div>
@@ -214,7 +214,7 @@ export default function TrackPage() {
               {/* Additional Notes */}
               <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span>📝</span> Additional Notes
+                  <span></span> Additional Notes
                 </h3>
                 <p className="text-gray-600">
                   {shipment.notes || 'No additional notes for this shipment.'}

@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
       
       // Verify user is ADMIN or STAFF
       if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
-        setError('❌ This account is not authorized for admin access');
+        setError(' This account is not authorized for admin access');
         setLoading(false);
         return;
       }
@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
             {/* Header */}
             <div className="mb-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-2xl">🏢</span>
+                <span className="text-white font-bold text-2xl"></span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Portal</h1>
               <p className="text-gray-600 mt-2">Sign in to your admin account</p>
@@ -101,7 +101,7 @@ export default function AdminLoginPage() {
                 disabled={loading}
                 className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
-                {loading ? '⏳ Signing in...' : '🔐 Sign In'}
+                {loading ? ' Signing in...' : ' Sign In'}
               </button>
             </form>
 

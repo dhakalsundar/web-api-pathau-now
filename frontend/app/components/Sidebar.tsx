@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { clearAuthCookies } from '@/lib/cookies';
 
 interface SidebarItem {
   label: string;
@@ -22,8 +23,7 @@ export default function Sidebar({ items, userRole = 'ADMIN', userName = 'Admin U
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthCookies();
     router.push('/');
   };
 
@@ -88,7 +88,7 @@ export default function Sidebar({ items, userRole = 'ADMIN', userName = 'Admin U
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500 hover:bg-red-600 transition text-white font-semibold"
         >
-          <span className="text-xl">🚪</span>
+          <span className="text-xl"></span>
           {!isCollapsed && <span>Logout</span>}
         </button>
       </div>

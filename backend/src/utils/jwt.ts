@@ -7,39 +7,26 @@ export interface TokenPayload {
   role: string;
 }
 
-const ACCESS_TOKEN_EXPIRY = 15 * 60; // 15 minutes in seconds
-const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days in seconds
+const TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days in seconds
 
 /**
- * Generate access token (15 minutes expiry)
+ * Generate single access token (7 days expiry)
  */
 export function generateAccessToken(payload: TokenPayload): string {
   return jwt.sign(payload, JWT_SECRET || 'your-secret-key', {
-    expiresIn: ACCESS_TOKEN_EXPIRY,
+    expiresIn: TOKEN_EXPIRY,
   });
 }
 
 /**
- * Generate refresh token (7 days expiry)
- */
-export function generateRefreshToken(payload: TokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET || 'your-secret-key', {
-    expiresIn: REFRESH_TOKEN_EXPIRY,
-  });
-}
-
-/**
- * Generate both access and refresh tokens
+ * Generate token (wrapper for consistency)
  */
 export function generateTokens(payload: TokenPayload) {
   const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
 
   return {
     accessToken,
-    refreshToken,
-    accessTokenExpiresIn: ACCESS_TOKEN_EXPIRY,
-    refreshTokenExpiresIn: REFRESH_TOKEN_EXPIRY,
+    accessTokenExpiresIn: TOKEN_EXPIRY,
   };
 }
 
@@ -47,31 +34,30 @@ export function generateTokens(payload: TokenPayload) {
  * Verify access token
  */
 export function verifyAccessToken(token: string): TokenPayload | null {
+  if (!JWT_SECRET) {
+    console.error(' [JWT] JWT_SECRET not configured in environment variables');
+    return null;
+  }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET || 'your-secret-key') as TokenPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    console.log(` [JWT] Token verified for user: ${decoded.email} (role: ${decoded.role})`);
     return decoded;
   } catch (error) {
+    console.error(` [JWT] Token verification failed:`, error instanceof Error ? error.message : error);
     return null;
   }
 }
 
-/**
- * Verify refresh token
- */
 export function verifyRefreshToken(token: string): TokenPayload | null {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET || 'your-secret-key') as TokenPayload;
-    return decoded;
-  } catch (error) {
+  if (!JWT_SECRET) {
+    console.error(' [JWT] JWT_SECRET not configured in environment variables');
     return null;
   }
-}
-
-/**
- * Calculate refresh token expiry date
- */
-export function getRefreshTokenExpiryDate(): Date {
-  const expiryDate = new Date();
-  expiryDate.setSeconds(expiryDate.getSeconds() + REFRESH_TOKEN_EXPIRY);
-  return expiryDate;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    return decoded;
+  } catch (error) {
+    console.error(` [JWT] Refresh token verification failed:`, error instanceof Error ? error.message : error);
+    return null;
+  }
 }

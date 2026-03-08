@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/app/lib/services";
+import { setAuthCookies } from "@/lib/cookies";
 
 export default function AdminLoginForm() {
   const router = useRouter();
@@ -21,18 +22,18 @@ export default function AdminLoginForm() {
     try {
       const result = await authService.login(email, password);
       console.log("Login result:", result);
-      
+
       // Check if user is admin
-      if (result.data.user?.role !== 'ADMIN') {
+      if (result.user?.role !== 'ADMIN') {
         setError("Access denied. Admin privileges required.");
         setLoading(false);
         return;
       }
 
-      // Mark the session as admin
-      localStorage.setItem("isAdmin", "true");
-      localStorage.setItem("adminUser", JSON.stringify(result.user));
-      
+      if (result.tokens?.accessToken && result.user) {
+        setAuthCookies(result.tokens.accessToken, result.user);
+      }
+
       router.push("/admin/dashboard");
     } catch (err: any) {
       setError(err.message || "Invalid credentials. Please try again.");
@@ -99,7 +100,7 @@ export default function AdminLoginForm() {
             type="submit"
             disabled={loading}
           >
-            {loading ? "🔄 Signing in..." : "🔐 Sign in"}
+            {loading ? " Signing in..." : " Sign in"}
           </button>
           <button 
             type="button" 
