@@ -88,19 +88,19 @@ export default function RiderRegisterPage() {
         vehicleNumber: formData.vehicleNumber || undefined,
       };
 
-      console.log('📤 [RIDER REGISTER] Sending payload:', payload);
+      console.log(' [RIDER REGISTER] Sending payload:', payload);
       
       const response = await authService.register(payload);
 
-      console.log('✅ [RIDER REGISTER] Success:', response);
-      setSuccess('✅ Rider account created successfully! Redirecting to login...');
+      console.log(' [RIDER REGISTER] Success:', response);
+      setSuccess(' Rider account created successfully! Redirecting to login...');
       
       setTimeout(() => {
         router.push('/login/rider');
       }, 2000);
     } catch (err: any) {
-      console.error('❌ [RIDER REGISTER] Error:', err);
-      console.error('📋 [RIDER REGISTER] Response data:', err.response?.data);
+      console.error(' [RIDER REGISTER] Error:', err);
+      console.error(' [RIDER REGISTER] Response data:', err.response?.data);
       
       // Extract detailed error messages from backend validation
       let errorMessage = 'Registration failed';
@@ -142,7 +142,7 @@ export default function RiderRegisterPage() {
             {/* Error Message */}
             {error && (
               <div className="mb-6 bg-red-50 border-2 border-red-300 rounded-lg p-4 text-red-700 font-semibold text-sm">
-                ❌ {error}
+                 {error}
               </div>
             )}
 
@@ -211,9 +211,9 @@ export default function RiderRegisterPage() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="">Select vehicle type</option>
-                    <option value="BIKE">🏍️ Bike/Motorcycle</option>
-                    <option value="CAR">🚗 Car</option>
-                    <option value="VAN">🚐 Van/Truck</option>
+                    <option value="BIKE"> Bike/Motorcycle</option>
+                    <option value="CAR"> Car</option>
+                    <option value="VAN"> Van/Truck</option>
                   </select>
                 </div>
 
@@ -265,7 +265,7 @@ export default function RiderRegisterPage() {
                 disabled={loading}
                 className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
-                {loading ? '⏳ Creating account...' : '🚀 Create Rider Account'}
+                {loading ? ' Creating account...' : ' Create Rider Account'}
               </button>
             </form>
 

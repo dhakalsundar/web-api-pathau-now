@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '@/app/lib/services';
-import { readAuthFromCookies } from '@/lib/cookies';
+import { clearAuthCookies, getAuthToken, getUserDetails, setAuthCookies } from '@/lib/cookies';
 
 export interface User {
   id: string;
@@ -33,52 +33,33 @@ interface AuthProviderProps {
 /**
  * AuthProvider Component
  * Provides authentication context to the entire application
- * Persists user data in localStorage and tokens in cookies
- * 
- * ⚠️ IMPORTANT: Tokens are stored in cookies via authService.login()
- * This context ensures user data is also synced to localStorage for quick access
+ * Persists user data and token in cookies
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
-   * Initialize authentication from cookies and localStorage on mount
+   * Initialize authentication from cookies on mount
    */
   useEffect(() => {
     const initializeAuth = () => {
       try {
-        // First, try to read user from localStorage (faster)
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            
-            // Verify token exists in cookies
-            const { token } = readAuthFromCookies();
-            if (!token) {
-              console.warn('⚠️ [AUTH] User in localStorage but no token in cookies - clearing user');
-              localStorage.removeItem('user');
-              setUser(null);
-            } else {
-              console.log('✅ [AUTH] User and token restored from storage');
-            }
-          } catch (parseError) {
-            console.error('Failed to parse stored user:', parseError);
-            localStorage.removeItem('user');
-          }
+        const token = getAuthToken();
+        const cookieUser = getUserDetails();
+
+        if (token && cookieUser) {
+          console.log(' [AUTH] Token and user found in cookies');
+          setUser(cookieUser);
+        } else if (token && !cookieUser) {
+          console.warn(' [AUTH] Token found but user cookie missing');
+          setUser(null);
         } else {
-          // Check if there's a token in cookies (user may have been cleared from localStorage)
-          const { token, user: cookieUser } = readAuthFromCookies();
-          if (token && cookieUser) {
-            console.log('✅ [AUTH] Token found in cookies, restoring user');
-            setUser(cookieUser);
-            localStorage.setItem('user', JSON.stringify(cookieUser));
-          }
+          console.warn(' [AUTH] No auth cookies found');
+          setUser(null);
         }
       } catch (error) {
-        console.error('❌ [AUTH] Failed to initialize auth:', error);
+        console.error(' [AUTH] Failed to initialize auth:', error);
       } finally {
         setIsLoading(false);
       }
@@ -89,32 +70,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Handle user login
-   * ✅ authService.login() already saves tokens to cookies via setAuthCookies()
-   * This function ensures user data is also saved to localStorage
+   *  authService.login() already saves token and user to cookies
    */
   const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
-      console.log('🔐 [AUTH] Attempting login for:', email);
+      console.log(' [AUTH] Attempting login for:', email);
       const response = await authService.login(email, password);
 
       // Response structure: { success, message, data: { user, tokens } }
       if (response?.data?.user) {
         const userData = response.data.user;
-        console.log('✅ [AUTH] Login successful for user:', userData.id);
+        console.log(' [AUTH] Login successful for user:', userData.id);
         
         // Update context
         setUser(userData);
-        
-        // Ensure user is in localStorage
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Verify token is in cookies (authService already set it)
-        const { token } = readAuthFromCookies();
+
+        // Ensure cookie payload is updated if needed
+        const token = getAuthToken();
         if (token) {
-          console.log('✅ [AUTH] Token confirmed in cookies');
-        } else {
-          console.warn('⚠️ [AUTH] Token not found in cookies after login!');
+          setAuthCookies(token, userData);
         }
         
         return userData;
@@ -122,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       throw new Error('Login failed: Invalid response structure');
     } catch (error) {
-      console.error('❌ [AUTH] Login error:', error);
+      console.error(' [AUTH] Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -131,21 +106,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Handle user logout
+   * Clears all auth data: cookies and context state
    */
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      console.log('🔓 [AUTH] Logging out user');
+      console.log(' [AUTH] Initiating logout...');
       await authService.logout();
       setUser(null);
-      localStorage.removeItem('user');
-      console.log('✅ [AUTH] Logout successful, all auth data cleared');
+      console.log(' [AUTH] Logout successful - all auth data cleared');
+      
+      // Redirect to login page
+      window.location.href = '/login';
     } catch (error) {
-      console.error('❌ [AUTH] Logout error:', error);
+      console.error(' [AUTH] Logout error:', error);
       // Clear local state even if logout fails
       setUser(null);
-      localStorage.removeItem('user');
-      throw error;
+      clearAuthCookies();
     } finally {
       setIsLoading(false);
     }
@@ -158,8 +135,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      console.log('✅ [AUTH] User data updated');
+      const token = getAuthToken();
+      if (token) {
+        setAuthCookies(token, updatedUser);
+      }
+      console.log(' [AUTH] User data updated');
     }
   };
 

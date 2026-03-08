@@ -25,7 +25,7 @@ export default function DetailedDashboardStats() {
   if (error || !stats) {
     return (
       <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6 text-center">
-        <p className="text-red-700 font-semibold">❌ Failed to load detailed statistics</p>
+        <p className="text-red-700 font-semibold">Failed to load detailed statistics</p>
         <p className="text-red-600 text-sm mt-2">{error || 'Unknown error'}</p>
       </div>
     );
@@ -38,37 +38,37 @@ export default function DetailedDashboardStats() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">📦 Shipment Statistics</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            icon="📦"
+            icon=""
             label="Total"
             value={stats.shipments.total}
             color="amber"
           />
           <StatCard
-            icon="⏳"
+            icon=""
             label="Pending"
             value={stats.shipments.pending}
             color="blue"
           />
           <StatCard
-            icon="✅"
+            icon=""
             label="Picked Up"
             value={stats.shipments.pickedUp}
             color="green"
           />
           <StatCard
-            icon="🚚"
+            icon=""
             label="In Transit"
             value={stats.shipments.inTransit}
             color="amber"
           />
           <StatCard
-            icon="🚲"
+            icon=""
             label="Out for Delivery"
             value={stats.shipments.outForDelivery}
             color="amber"
           />
           <StatCard
-            icon="✅"
+            icon=""
             label="Delivered"
             value={stats.shipments.delivered}
             color="green"
@@ -76,13 +76,13 @@ export default function DetailedDashboardStats() {
             trendPositive={true}
           />
           <StatCard
-            icon="❌"
+            icon=""
             label="Failed"
             value={stats.shipments.failed}
             color="red"
           />
           <StatCard
-            icon="🛑"
+            icon=""
             label="Cancelled"
             value={stats.shipments.cancelled}
             color="purple"
@@ -95,13 +95,13 @@ export default function DetailedDashboardStats() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">🏍️ Rider Statistics</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            icon="🏍️"
+            icon=""
             label="Total Riders"
             value={stats.riders.total}
             color="red"
           />
           <StatCard
-            icon="🟢"
+            icon=""
             label="Available"
             value={stats.riders.available}
             color="green"
@@ -125,28 +125,28 @@ export default function DetailedDashboardStats() {
 
       {/* User Statistics */}
       <section className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">👥 User Statistics</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6"> User Statistics</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            icon="👥"
+            icon=""
             label="Total Users"
             value={stats.users.totalUsers}
             color="purple"
           />
           <StatCard
-            icon="🛒"
+            icon=""
             label="Customers"
             value={stats.users.totalCustomers}
             color="blue"
           />
           <StatCard
-            icon="👨‍💼"
+            icon=""
             label="Staff"
             value={stats.users.totalStaff}
             color="amber"
           />
           <StatCard
-            icon="👨‍💻"
+            icon=""
             label="Admins"
             value={stats.users.totalAdmins}
             color="green"
@@ -156,11 +156,12 @@ export default function DetailedDashboardStats() {
 
       {/* Revenue Statistics */}
       <section className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">💰 Revenue Statistics</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6"> Revenue Statistics</h2>
+        
         <StatCard
-          icon="💵"
+          icon=""
           label="Total Revenue"
-          value={`৳${stats.revenue.total.toLocaleString()}`}
+          value={`Rs${stats.revenue.total.toLocaleString()}`}
           color="green"
           trend={`${(stats.revenue.total / stats.shipments.delivered || 0).toFixed(2)} per delivery`}
           trendPositive={true}

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 export interface ShipmentFilters {
   status?: string;
-  riderId?: string;
+  riderUserId?: string;
   customerId?: string;
   startDate?: Date;
   endDate?: Date;
@@ -20,13 +20,13 @@ export class ShipmentRepository {
 
   async findById(id: string | mongoose.Types.ObjectId): Promise<IShipment | null> {
     return await ShipmentModel.findById(id)
-      .populate('riderId', 'name phoneNumber vehicleType status')
+      .populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus')
       .populate('customerId', 'email firstName lastName phoneNumber');
   }
 
   async findByTrackingNumber(trackingNumber: string): Promise<IShipment | null> {
     return await ShipmentModel.findOne({ trackingNumber })
-      .populate('riderId', 'name phoneNumber vehicleType status')
+      .populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus')
       .populate('customerId', 'email firstName lastName phoneNumber');
   }
 
@@ -35,7 +35,7 @@ export class ShipmentRepository {
     const query: any = {};
 
     if (filters.status) query.status = filters.status;
-    if (filters.riderId) query.riderId = filters.riderId;
+    if (filters.riderUserId) query.riderUserId = filters.riderUserId;
     if (filters.customerId) query.customerId = filters.customerId;
     if (filters.paymentStatus) query.paymentStatus = filters.paymentStatus;
     if (filters.deliveryType) query.deliveryType = filters.deliveryType;
@@ -48,7 +48,7 @@ export class ShipmentRepository {
     }
 
     const shipments = await ShipmentModel.find(query)
-      .populate('riderId', 'name phoneNumber vehicleType status')
+      .populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus')
       .populate('customerId', 'email firstName lastName')
       .skip(skip)
       .limit(limit)
@@ -61,7 +61,7 @@ export class ShipmentRepository {
 
   async update(id: string | mongoose.Types.ObjectId, updateData: Partial<IShipment>): Promise<IShipment | null> {
     return await ShipmentModel.findByIdAndUpdate(id, updateData, { new: true })
-      .populate('riderId', 'name phoneNumber vehicleType status')
+      .populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus')
       .populate('customerId', 'email firstName lastName');
   }
 
@@ -73,7 +73,7 @@ export class ShipmentRepository {
     }
 
     return await ShipmentModel.findByIdAndUpdate(id, updateData, { new: true })
-      .populate('riderId', 'name phoneNumber vehicleType status');
+      .populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus');
   }
 
   async addEvent(id: string | mongoose.Types.ObjectId, event: IShipmentEvent): Promise<IShipment | null> {
@@ -104,7 +104,7 @@ export class ShipmentRepository {
     };
 
     const shipments = await ShipmentModel.find(query)
-      .populate('riderId', 'name phoneNumber vehicleType status')
+      .populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus')
       .populate('customerId', 'email firstName lastName')
       .skip(skip)
       .limit(limit)
@@ -142,17 +142,37 @@ export class ShipmentRepository {
     return result.length > 0 ? result[0].total : 0;
   }
 
-  async assignRider(shipmentId: string | mongoose.Types.ObjectId, riderId: string | mongoose.Types.ObjectId): Promise<IShipment | null> {
+  async assignRider(shipmentId: string | mongoose.Types.ObjectId, riderUserId: string | mongoose.Types.ObjectId): Promise<IShipment | null> {
     return await ShipmentModel.findByIdAndUpdate(
       shipmentId,
-      { riderId },
+      { riderUserId },
       { new: true }
-    ).populate('riderId', 'name phoneNumber vehicleType status');
+    ).populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus');
   }
 
-  async findByRider(riderId: string | mongoose.Types.ObjectId): Promise<IShipment[]> {
-    return await ShipmentModel.find({ riderId })
+  async findByRider(riderUserId: string | mongoose.Types.ObjectId): Promise<IShipment[]> {
+    return await ShipmentModel.find({ riderUserId })
       .sort({ createdAt: -1 });
+  }
+
+ 
+  async findAvailableShipments(page: number = 1, limit: number = 10): Promise<{ shipments: IShipment[], total: number }> {
+    const skip = (page - 1) * limit;
+    const query = {
+      riderUserId: { $exists: false }, // Not assigned to any rider user
+      status: 'PENDING', // Still pending pickup
+    };
+
+    const shipments = await ShipmentModel.find(query)
+      .populate('riderUserId', 'firstName lastName phoneNumber vehicleType riderStatus')
+      .populate('customerId', 'email firstName lastName phoneNumber')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await ShipmentModel.countDocuments(query);
+
+    return { shipments, total };
   }
 
   async getStats(): Promise<any> {

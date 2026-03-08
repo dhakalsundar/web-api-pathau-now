@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { clearAuthCookies, getUserDetails } from '@/lib/cookies';
 
 export default function Navbar() {
   const router = useRouter();
@@ -10,19 +11,14 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse user from localStorage:', error);
-      }
+    const cookieUser = getUserDetails();
+    if (cookieUser) {
+      setUser(cookieUser);
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthCookies();
     setUser(null);
     router.push('/');
   };

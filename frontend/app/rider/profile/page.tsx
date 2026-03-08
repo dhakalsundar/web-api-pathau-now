@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { riderService } from '@/app/lib/services';
+import ProfilePictureUpload from '@/components/ProfilePictureUpload';
+import { getAuthToken, getUserDetails, setAuthCookies } from '@/lib/cookies';
 
 interface Rider {
   _id: string;
@@ -15,15 +17,19 @@ interface Rider {
   vehicleNumber?: string;
   totalDeliveries?: number;
   rating?: number;
+  userId?: string;
 }
 
 export default function RiderProfile() {
   const router = useRouter();
   const [rider, setRider] = useState<Rider | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [avatarError, setAvatarError] = useState('');
+  const [avatarSuccess, setAvatarSuccess] = useState('');
   const [activeTab, setActiveTab] = useState<'info' | 'vehicle' | 'status' | 'location'>('info');
 
   // Form states
@@ -38,6 +44,14 @@ export default function RiderProfile() {
   const [address, setAddress] = useState('');
 
   useEffect(() => {
+    // Load user data from cookies
+    try {
+      const userData = getUserDetails();
+      if (userData) setUser(userData);
+    } catch (err) {
+      console.error('Failed to load user data:', err);
+    }
+    
     fetchRiderProfile();
   }, []);
 
@@ -56,7 +70,7 @@ export default function RiderProfile() {
       setStatus(riderData.status || 'AVAILABLE');
       setError('');
     } catch (err: any) {
-      console.error('❌ Error fetching profile:', err);
+      console.error(' Error fetching profile:', err);
       setError(err.response?.data?.message || 'Failed to load profile');
     } finally {
       setLoading(false);
@@ -65,11 +79,22 @@ export default function RiderProfile() {
 
   const handleUpdateBasicInfo = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim() || !phoneNumber.trim()) {
+      setError('Please fill in all required fields');
+      return;
+    }
     try {
       setUpdating(true);
-      // Assuming backend has endpoint to update rider info
-      // For now, just show success
-      setSuccess('✅ Profile information updated successfully');
+      await riderService.updateMyProfile({
+        name,
+        email,
+        phoneNumber,
+      });
+      setSuccess(' Profile information updated successfully');
+      // Update local state
+      if (rider) {
+        setRider({ ...rider, name, email, phoneNumber });
+      }
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update profile');
@@ -86,8 +111,15 @@ export default function RiderProfile() {
     }
     try {
       setUpdating(true);
-      // Assuming backend has endpoint to update vehicle info
-      setSuccess('✅ Vehicle information updated successfully');
+      await riderService.updateMyProfile({
+        vehicleType,
+        vehicleNumber,
+      });
+      setSuccess(' Vehicle information updated successfully');
+      // Update local state
+      if (rider) {
+        setRider({ ...rider, vehicleType, vehicleNumber });
+      }
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update vehicle');
@@ -101,7 +133,7 @@ export default function RiderProfile() {
     try {
       setUpdating(true);
       await riderService.updateMyStatus(status);
-      setSuccess('✅ Availability status updated successfully');
+      setSuccess(' Availability status updated successfully');
       setRider((prev) => (prev ? { ...prev, status } : null));
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -120,7 +152,7 @@ export default function RiderProfile() {
     try {
       setUpdating(true);
       await riderService.updateMyLocation(parseFloat(latitude), parseFloat(longitude), address);
-      setSuccess('✅ Location updated successfully');
+      setSuccess(' Location updated successfully');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update location');
@@ -151,7 +183,7 @@ export default function RiderProfile() {
       case 'OFFLINE':
         return '⚫';
       default:
-        return '❓';
+        return '';
     }
   };
 
@@ -176,7 +208,7 @@ export default function RiderProfile() {
         {/* Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">👤 My Profile</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2"> My Profile</h1>
             <p className="text-gray-600">Manage your rider profile and settings</p>
           </div>
           <Link
@@ -190,7 +222,7 @@ export default function RiderProfile() {
         {/* Alerts */}
         {error && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-            <p className="text-red-700 font-medium">❌ {error}</p>
+            <p className="text-red-700 font-medium"> {error}</p>
           </div>
         )}
 
@@ -200,36 +232,72 @@ export default function RiderProfile() {
           </div>
         )}
 
+        {avatarError && (
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <p className="text-red-700 font-medium"> {avatarError}</p>
+          </div>
+        )}
+
+        {avatarSuccess && (
+          <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <p className="text-green-700 font-medium"> {avatarSuccess}</p>
+          </div>
+        )}
+
         {/* Profile Overview Card */}
         {rider && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8 border-l-4 border-green-500">
-            <div className="flex justify-between items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Avatar Section */}
+              <div>
+                <ProfilePictureUpload
+                  currentAvatar={user?.avatar}
+                  userName={rider.name}
+                  userInitial={rider.name?.[0]?.toUpperCase() || 'R'}
+                  onAvatarChange={(avatarPath) => {
+                    const updatedUser = { ...user, avatar: avatarPath };
+                    setUser(updatedUser);
+                    const token = getAuthToken();
+                    if (token) {
+                      setAuthCookies(token, updatedUser);
+                    }
+                    setAvatarSuccess('Profile picture updated successfully!');
+                    setTimeout(() => setAvatarSuccess(''), 3000);
+                  }}
+                  onError={(error) => {
+                    setAvatarError(error);
+                    setTimeout(() => setAvatarError(''), 4000);
+                  }}
+                />
+              </div>
+
+              {/* Stats Section */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">{rider.name}</h2>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
                     <p className="text-sm font-semibold text-gray-600 uppercase">Total Deliveries</p>
-                    <p className="text-2xl font-bold text-green-600 mt-1">🎯 {rider.totalDeliveries || 0}</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1"> {rider.totalDeliveries || 0}</p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-600 uppercase">Rating</p>
-                    <p className="text-2xl font-bold text-yellow-600 mt-1">⭐ {rider.rating?.toFixed(1) || '0.0'}/5</p>
+                    <p className="text-2xl font-bold text-yellow-600 mt-1"> {rider.rating?.toFixed(1) || '0.0'}/5</p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-600 uppercase">Email</p>
-                    <p className="text-sm font-mono text-gray-700 mt-1">📧 {rider.email}</p>
+                    <p className="text-sm font-mono text-gray-700 mt-1"> {rider.email}</p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-600 uppercase">Phone</p>
-                    <p className="text-sm font-mono text-gray-700 mt-1">📱 {rider.phoneNumber}</p>
+                    <p className="text-sm font-mono text-gray-700 mt-1"> {rider.phoneNumber}</p>
                   </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-600 uppercase mb-2">Current Status</p>
-                <div className={`inline-block px-4 py-2 rounded-lg font-bold text-white ${getStatusColor(rider.status)}`}>
-                  <span className="mr-2">{getStatusIcon(rider.status)}</span>
-                  {rider.status}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-600 uppercase mb-2">Current Status</p>
+                    <div className={`inline-block px-4 py-2 rounded-lg font-bold text-white ${getStatusColor(rider.status)}`}>
+                      <span className="mr-2">{getStatusIcon(rider.status)}</span>
+                      {rider.status}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -247,7 +315,7 @@ export default function RiderProfile() {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              📋 Basic Info
+               Basic Info
             </button>
             <button
               onClick={() => setActiveTab('vehicle')}
@@ -257,7 +325,7 @@ export default function RiderProfile() {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              🚗 Vehicle
+               Vehicle
             </button>
             <button
               onClick={() => setActiveTab('status')}
@@ -267,7 +335,7 @@ export default function RiderProfile() {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              🔔 Status
+               Status
             </button>
             <button
               onClick={() => setActiveTab('location')}
@@ -277,7 +345,7 @@ export default function RiderProfile() {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              📍 Location
+               Location
             </button>
           </div>
 
@@ -321,7 +389,7 @@ export default function RiderProfile() {
                   disabled={updating}
                   className="w-full mt-6 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold disabled:opacity-50"
                 >
-                  {updating ? '⏳ Updating...' : '💾 Save Changes'}
+                  {updating ? ' Updating...' : ' Save Changes'}
                 </button>
               </form>
             )}
@@ -337,11 +405,11 @@ export default function RiderProfile() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="">Select a vehicle type</option>
-                    <option value="Motorcycle">🏍️ Motorcycle</option>
-                    <option value="Bicycle">🚴 Bicycle</option>
-                    <option value="Car">🚗 Car</option>
-                    <option value="Van">🚐 Van</option>
-                    <option value="Truck">🚚 Truck</option>
+                    <option value="Motorcycle"> Motorcycle</option>
+                    <option value="Bicycle"> Bicycle</option>
+                    <option value="Car"> Car</option>
+                    <option value="Van"> Van</option>
+                    <option value="Truck"> Truck</option>
                   </select>
                 </div>
                 <div>
@@ -359,7 +427,7 @@ export default function RiderProfile() {
                   disabled={updating}
                   className="w-full mt-6 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold disabled:opacity-50"
                 >
-                  {updating ? '⏳ Updating...' : '💾 Save Vehicle Info'}
+                  {updating ? ' Updating...' : ' Save Vehicle Info'}
                 </button>
               </form>
             )}
@@ -397,7 +465,7 @@ export default function RiderProfile() {
                   disabled={updating}
                   className="w-full mt-6 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold disabled:opacity-50"
                 >
-                  {updating ? '⏳ Updating...' : '💾 Update Status'}
+                  {updating ? ' Updating...' : ' Update Status'}
                 </button>
               </form>
             )}
@@ -407,7 +475,7 @@ export default function RiderProfile() {
               <form onSubmit={handleUpdateLocation} className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <p className="text-sm text-blue-700">
-                    💡 Update your current location so the system can track your movements during deliveries.
+                     Update your current location so the system can track your movements during deliveries.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -449,7 +517,7 @@ export default function RiderProfile() {
                   disabled={updating}
                   className="w-full mt-6 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold disabled:opacity-50"
                 >
-                  {updating ? '⏳ Updating...' : '📍 Update Location'}
+                  {updating ? ' Updating...' : ' Update Location'}
                 </button>
               </form>
             )}

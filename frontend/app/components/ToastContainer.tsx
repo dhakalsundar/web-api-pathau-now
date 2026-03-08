@@ -30,15 +30,15 @@ export default function ToastContainer() {
   const getIcon = (type: string) => {
     switch (type) {
       case 'success':
-        return '✅';
+        return '';
       case 'error':
-        return '❌';
+        return '';
       case 'warning':
-        return '⚠️';
+        return '';
       case 'info':
-        return 'ℹ️';
+        return '';
       default:
-        return '📢';
+        return '';
     }
   };
 

@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
+import { clearAuthCookies } from '@/lib/cookies';
+import ConfirmationModal from './ConfirmationModal';
 
 interface SidebarItem {
   label: string;
@@ -15,20 +18,34 @@ interface SidebarProps {
   items: SidebarItem[];
   userRole?: string;
   userName?: string;
+  userAvatar?: string;
+  apiBaseUrl?: string;
 }
 
-export default function Sidebar({ items, userRole = 'ADMIN', userName = 'Admin User' }: SidebarProps) {
+export default function Sidebar({ items, userRole = 'ADMIN', userName = 'Admin User', userAvatar, apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000' }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('adminUser');
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    clearAuthCookies();
     router.push('/');
   };
+
+  // Get avatar display URL
+  const getAvatarUrl = () => {
+    if (!userAvatar) return null;
+    if (userAvatar.startsWith('http')) return userAvatar;
+    return `${apiBaseUrl}${userAvatar}`;
+  };
+
+  const avatarUrl = getAvatarUrl();
+  const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase() || 'A';
 
   // Check if a route is active
   const isActive = (href: string): boolean => {
@@ -71,8 +88,20 @@ export default function Sidebar({ items, userRole = 'ADMIN', userName = 'Admin U
       {/* User Info */}
       {!isCollapsed && (
         <div className="p-4 border-b border-gray-800">
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center font-bold mb-2">
-            {userName[0]?.toUpperCase() || 'A'}
+          <div className="relative w-12 h-12 rounded-full flex items-center justify-center font-bold mb-2 overflow-hidden flex-shrink-0 bg-gradient-to-br from-amber-400 to-amber-600">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt={userName || 'User avatar'}
+                fill
+                className="object-cover"
+                onError={(e) => {
+                  console.error('Avatar image failed to load:', e);
+                }}
+              />
+            ) : (
+              <span className="text-white">{initials}</span>
+            )}
           </div>
           <p className="font-semibold text-sm truncate">{userName}</p>
           <span className="text-xs text-amber-400 font-semibold">{userRole}</span>
@@ -121,6 +150,19 @@ export default function Sidebar({ items, userRole = 'ADMIN', userName = 'Admin U
           {!isCollapsed && <span>Logout</span>}
         </button>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showLogoutConfirm}
+        title="Logout Confirmation"
+        message="Are you sure you want to logout? You'll need to login again to access your account."
+        confirmText="Yes, Logout"
+        cancelText="Cancel"
+        isDangerous={true}
+        icon=""
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </aside>
   );
 }

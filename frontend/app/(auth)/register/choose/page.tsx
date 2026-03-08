@@ -20,7 +20,7 @@ export default function RegisterRoleChooser() {
     },
     {
       id: 'customer',
-      title: '👤 Customer/User',
+      title: ' Customer/User',
       description: 'Create account to book and track shipments',
       color: 'from-amber-500 to-amber-600',
       textColor: 'text-amber-600',
@@ -30,7 +30,7 @@ export default function RegisterRoleChooser() {
     },
     {
       id: 'admin',
-      title: '🏢 Admin/Staff',
+      title: ' Admin/Staff',
       description: 'Admin accounts are created by management',
       color: 'from-gray-400 to-gray-600',
       textColor: 'text-gray-600',

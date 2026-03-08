@@ -12,7 +12,7 @@ export default function VerticalTimelineDemo() {
       description: 'Your shipment has been created and is pending assignment',
       timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
       location: 'Dhaka',
-      icon: '📦',
+      icon: '',
       completed: true,
     },
     {
@@ -22,7 +22,7 @@ export default function VerticalTimelineDemo() {
       description: 'Ahmed Khan has been assigned to your shipment',
       timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
       location: 'Dhaka',
-      icon: '🎯',
+      icon: '',
       completed: true,
     },
     {
@@ -32,7 +32,7 @@ export default function VerticalTimelineDemo() {
       description: 'Package has been picked up from sender location',
       timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
       location: 'Dhaka',
-      icon: '✅',
+      icon: '',
       completed: true,
     },
     {
@@ -42,7 +42,7 @@ export default function VerticalTimelineDemo() {
       description: 'Your package is on the way to delivery address',
       timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
       location: 'Dhaka to Chittagong',
-      icon: '🚚',
+      icon: '',
       current: true,
       completed: false,
     },
@@ -53,7 +53,7 @@ export default function VerticalTimelineDemo() {
       description: 'Package is out for final delivery today',
       timestamp: undefined,
       location: 'Chittagong',
-      icon: '🚲',
+      icon: '',
       completed: false,
     },
     {
@@ -63,7 +63,7 @@ export default function VerticalTimelineDemo() {
       description: 'Package successfully delivered',
       timestamp: undefined,
       location: 'Chittagong',
-      icon: '✅',
+      icon: '',
       completed: false,
     },
   ];
@@ -76,7 +76,7 @@ export default function VerticalTimelineDemo() {
       title: 'Application Submitted',
       description: 'Your application has been received',
       timestamp: new Date().toISOString(),
-      icon: '📋',
+      icon: '',
       completed: true,
     },
     {
@@ -86,7 +86,7 @@ export default function VerticalTimelineDemo() {
       description: 'Our team is reviewing your application',
       timestamp: new Date().toISOString(),
       current: true,
-      icon: '👀',
+      icon: '',
       completed: false,
     },
     {
@@ -94,7 +94,7 @@ export default function VerticalTimelineDemo() {
       status: 'IN_TRANSIT',
       title: 'Approval In Progress',
       description: 'Final approvals are being processed',
-      icon: '⚙️',
+      icon: '',
       completed: false,
     },
     {
@@ -102,7 +102,7 @@ export default function VerticalTimelineDemo() {
       status: 'DELIVERED',
       title: 'Approved',
       description: 'Your application has been approved',
-      icon: '✅',
+      icon: '',
       completed: false,
     },
   ];
@@ -264,7 +264,7 @@ const steps = [
     timestamp: new Date().toISOString(),
     location: 'Dhaka',
     completed: true,
-    icon: '📦'
+    icon: ''
   },
   {
     id: 'step2',
@@ -273,7 +273,7 @@ const steps = [
     description: 'On the way to delivery',
     current: true,
     location: 'Highway',
-    icon: '🚚'
+    icon: ''
   }
 ];
 
@@ -299,14 +299,14 @@ const steps = [
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Status Colors & Icons</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { status: 'CREATED', emoji: '📦', color: 'bg-gray-100', colorName: 'Gray' },
-              { status: 'ASSIGNED', emoji: '🎯', color: 'bg-blue-100', colorName: 'Blue' },
-              { status: 'PICKED', emoji: '✅', color: 'bg-blue-100', colorName: 'Blue' },
-              { status: 'IN_TRANSIT', emoji: '🚚', color: 'bg-yellow-100', colorName: 'Yellow' },
-              { status: 'OUT_FOR_DELIVERY', emoji: '🚲', color: 'bg-orange-100', colorName: 'Orange' },
-              { status: 'DELIVERED', emoji: '✅', color: 'bg-green-100', colorName: 'Green' },
-              { status: 'FAILED', emoji: '❌', color: 'bg-red-100', colorName: 'Red' },
-              { status: 'CANCELLED', emoji: '🛑', color: 'bg-purple-100', colorName: 'Purple' },
+              { status: 'CREATED', emoji: '', color: 'bg-gray-100', colorName: 'Gray' },
+              { status: 'ASSIGNED', emoji: '', color: 'bg-blue-100', colorName: 'Blue' },
+              { status: 'PICKED', emoji: '', color: 'bg-blue-100', colorName: 'Blue' },
+              { status: 'IN_TRANSIT', emoji: '', color: 'bg-yellow-100', colorName: 'Yellow' },
+              { status: 'OUT_FOR_DELIVERY', emoji: '', color: 'bg-orange-100', colorName: 'Orange' },
+              { status: 'DELIVERED', emoji: '', color: 'bg-green-100', colorName: 'Green' },
+              { status: 'FAILED', emoji: '', color: 'bg-red-100', colorName: 'Red' },
+              { status: 'CANCELLED', emoji: '', color: 'bg-purple-100', colorName: 'Purple' },
             ].map(({ status, emoji, color, colorName }) => (
               <div key={status} className="border border-gray-200 rounded-lg p-4 text-center">
                 <div className={`${color} w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-2xl`}>

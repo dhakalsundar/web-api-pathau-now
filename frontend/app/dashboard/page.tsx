@@ -42,7 +42,7 @@ export default function PublicDashboard() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Welcome back, {user.firstName}! 👋
+            Welcome back, {user.firstName}! 
           </h1>
           <p className="text-xl text-gray-600">
             Here's a complete overview of your shipment management system
@@ -51,13 +51,13 @@ export default function PublicDashboard() {
 
         {/* Quick Stats - 5 Main Cards */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">📊 Quick Overview</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"> Quick Overview</h2>
           <DashboardStatsGrid />
         </section>
 
         {/* Detailed Statistics */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">📈 Detailed Analytics</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"> Detailed Analytics</h2>
           <DetailedDashboardStats />
         </section>
       </main>

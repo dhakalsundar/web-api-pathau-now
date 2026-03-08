@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SidebarWithRoutes from '@/app/components/SidebarWithRoutes';
+import { getAuthToken, getUserDetails } from '@/lib/cookies';
 
 interface SidebarItem {
   label: string;
@@ -26,25 +27,25 @@ export default function RiderLayout({ children }: RiderLayoutProps) {
       return;
     }
 
-    // Check user data in localStorage (token is in cookies)
-    const userData = localStorage.getItem('user');
+    const token = getAuthToken();
+    const userData = getUserDetails();
 
-    console.log('🔍 Rider Layout Auth Check:', { hasUserData: !!userData });
+    console.log(' Rider Layout Auth Check:', { hasUserData: !!userData, hasToken: !!token });
 
-    if (!userData) {
-      console.log('❌ No user data, redirecting to login');
+    if (!userData || !token) {
+      console.log(' No user auth, redirecting to login');
       router.push('/login');
       return;
     }
 
     try {
-      const parsedUser = JSON.parse(userData);
-      console.log('👤 Parsed user:', parsedUser);
+      const parsedUser = userData;
+      console.log(' Parsed user:', parsedUser);
       
       // Check if user is a RIDER
       const role = parsedUser.role?.toUpperCase();
       if (role !== 'RIDER') {
-        console.log('⚠️ Non-rider user, redirecting to appropriate dashboard');
+        console.log(' Non-rider user, redirecting to appropriate dashboard');
         
         if (role === 'ADMIN' || role === 'STAFF') {
           router.push('/admin/dashboard');
@@ -56,10 +57,10 @@ export default function RiderLayout({ children }: RiderLayoutProps) {
         return;
       }
 
-      console.log('✅ Rider user verified, allowing access');
+      console.log('Rider user verified, allowing access');
       setUser(parsedUser);
     } catch (error) {
-      console.error('❌ Error parsing user data:', error);
+      console.error(' Error parsing user data:', error);
       router.push('/login');
     } finally {
       setLoading(false);
@@ -86,22 +87,22 @@ export default function RiderLayout({ children }: RiderLayoutProps) {
     {
       label: 'Dashboard',
       href: '/rider/dashboard',
-      icon: '📊',
+      icon: '',
     },
     {
       label: 'My Deliveries',
       href: '/rider/deliveries',
-      icon: '🚚',
+      icon: '',
     },
     {
       label: 'My Performance',
       href: '/rider/performance',
-      icon: '📈',
+      icon: '',
     },
     {
       label: 'Profile',
       href: '/rider/profile',
-      icon: '👤',
+      icon: '',
     },
   ];
 
@@ -109,7 +110,10 @@ export default function RiderLayout({ children }: RiderLayoutProps) {
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <SidebarWithRoutes 
-        items={sidebarItems} 
+        items={sidebarItems}
+        userRole={user?.role?.toUpperCase() || 'RIDER'}
+        userName={`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Rider'}
+        userAvatar={user?.avatar}
       />
 
       {/* Main Content */}

@@ -1,19 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserService } from '../services/user.service';
-import { RiderService } from '../services/rider.service';
 import { HttpError } from '../errors/http-error';
-import { generateTokens, verifyRefreshToken, getRefreshTokenExpiryDate } from '../utils/jwt';
+import { generateTokens, verifyRefreshToken } from '../utils/jwt';
 
 const userService = new UserService();
-const riderService = new RiderService();
 
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log('📥 [AUTH] Register endpoint called');
+      console.log(' [AUTH] Register endpoint called');
       const { email, password, firstName, lastName, phoneNumber, name, phone, address, role, vehicleType, vehicleNumber } = req.body;
       
-      console.log('📋 [AUTH] Extracted fields:');
+      console.log(' [AUTH] Extracted fields:');
       console.log(`   email: ${email}`);
       console.log(`   password: ${password ? '***' : 'undefined'}`);
       console.log(`   name: ${name}`);
@@ -45,8 +43,8 @@ export class AuthController {
       // Handle phone field mapping
       const phoneNum = phone || phoneNumber || '';
 
-      // Determine user role (default to CUSTOMER if not provided)
-      const userRole = role || 'CUSTOMER';
+      // Determine user role (default to CUSTOMER if not provided) - normalize to uppercase
+      const userRole = (role || 'CUSTOMER').toUpperCase();
 
       console.log(`👤 [AUTH] Creating user: name=${first_name} ${last_name}, email=${email}, role=${userRole}, phone=${phoneNum}`);
 
@@ -60,43 +58,36 @@ export class AuthController {
         role: userRole,
       });
 
-      console.log(`✅ [AUTH] User created: ${user._id}`);
+      console.log(` [AUTH] User created: ${user._id}`);
 
-      // If registering as RIDER, create a rider profile
+      // If registering as RIDER, update rider-specific fields
       if (userRole === 'RIDER') {
         try {
-          console.log(`🏍️  [AUTH] Creating rider profile for user ${user._id}`);
+          console.log(`  [AUTH] Adding rider fields for user ${user._id}`);
           console.log(`   vehicleType: ${vehicleType}, vehicleNumber: ${vehicleNumber}`);
           
-          await riderService.createRider({
-            name: first_name + (last_name ? ' ' + last_name : ''),
-            email,
-            phoneNumber: phoneNum,
-            vehicleType,
-            vehicleNumber,
-            status: 'OFFLINE',
-            isActive: true,
+          await userService.getUserById(user._id.toString()).then(async (existingUser) => {
+            if (existingUser) {
+              // Update user with rider-specific fields
+              await userService.updateUser(user._id.toString(), {
+                vehicleType: vehicleType || null,
+                vehicleNumber: vehicleNumber || null,
+                riderStatus: 'AVAILABLE',
+              });
+              console.log(` [AUTH] Rider fields added`);
+            }
           });
-          
-          console.log(`✅ [AUTH] Rider profile created`);
         } catch (riderError: any) {
-          // Log rider creation error but don't fail user creation
-          console.error('⚠️  [AUTH] Error creating rider profile:', riderError.message);
+          // Log error but don't fail user creation
+          console.error('  [AUTH] Error updating rider fields:', riderError.message);
         }
       }
 
       // Generate access and refresh tokens
-      const { accessToken, refreshToken, accessTokenExpiresIn, refreshTokenExpiresIn } = generateTokens({
+      const { accessToken, accessTokenExpiresIn } = generateTokens({
         id: user._id.toString(),
         email: user.email,
         role: user.role,
-      });
-
-      // Store refresh token in database
-      const refreshTokenExpiresAt = getRefreshTokenExpiryDate();
-      await userService.updateUser(user._id.toString(), {
-        refreshToken,
-        refreshTokenExpiresAt,
       });
 
       return res.status(201).json({
@@ -109,12 +100,13 @@ export class AuthController {
             firstName: user.firstName,
             lastName: user.lastName,
             role: user.role,
+            avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+            createdAt: user.createdAt,
           },
           tokens: {
             accessToken,
-            refreshToken,
             accessTokenExpiresIn,
-            refreshTokenExpiresIn,
           },
         },
       });
@@ -135,24 +127,16 @@ export class AuthController {
       if (!user) {
         throw new HttpError(401, 'Invalid email or password');
       }
-
       const isPasswordValid = await userService.comparePassword(password, user.password);
       if (!isPasswordValid) {
         throw new HttpError(401, 'Invalid email or password');
       }
 
-      // Generate access and refresh tokens
-      const { accessToken, refreshToken, accessTokenExpiresIn, refreshTokenExpiresIn } = generateTokens({
+      // Generate access token
+      const { accessToken, accessTokenExpiresIn } = generateTokens({
         id: user._id.toString(),
         email: user.email,
         role: user.role,
-      });
-
-      // Store refresh token in database
-      const refreshTokenExpiresAt = getRefreshTokenExpiryDate();
-      await userService.updateUser(user._id.toString(), {
-        refreshToken,
-        refreshTokenExpiresAt,
       });
 
       return res.status(200).json({
@@ -166,12 +150,12 @@ export class AuthController {
             lastName: user.lastName,
             role: user.role,
             avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+            createdAt: user.createdAt,
           },
           tokens: {
             accessToken,
-            refreshToken,
             accessTokenExpiresIn,
-            refreshTokenExpiresIn,
           },
         },
       });
@@ -218,7 +202,8 @@ export class AuthController {
       const currentUser = (req as any).user;
 
       // Only allow users to update their own profile or admins to update anyone
-      if (currentUser.id !== id && currentUser.role !== 'ADMIN') {
+      const userRole = currentUser.role?.toUpperCase();
+      if (currentUser.id !== id && userRole !== 'ADMIN') {
         throw new HttpError(403, 'You can only update your own profile');
       }
 
@@ -235,6 +220,131 @@ export class AuthController {
         success: true,
         message: 'Profile updated successfully',
         data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateAvatar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const currentUser = (req as any).user;
+
+      if (!req.file) {
+        throw new HttpError(400, 'No file provided');
+      }
+
+      const avatarPath = `/uploads/${req.file.filename}`;
+
+      const user = await userService.updateUser(currentUser.id, {
+        avatar: avatarPath,
+      });
+
+      console.log(` [AUTH] Avatar updated successfully: ${avatarPath}`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Profile picture updated successfully',
+        data: {
+          user: {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+            createdAt: user.createdAt,
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateCurrentUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const currentUser = (req as any).user;
+      let { firstName, lastName, phoneNumber, name, phone } = req.body;
+
+      console.log(`✏️  [AUTH] Updating current user profile: ${currentUser.id}`);
+      console.log(`   Received fields - firstName: ${firstName}, lastName: ${lastName}, name: ${name}, phone: ${phone}, phoneNumber: ${phoneNumber}`);
+
+      // Handle field mapping: support both old format (name, phone) and new format (firstName, lastName, phoneNumber)
+      if (name && !firstName) {
+        const nameParts = name.trim().split(' ');
+        firstName = nameParts[0];
+        lastName = nameParts.slice(1).join(' ') || '';
+        console.log(`   Mapped 'name' to firstName="${firstName}", lastName="${lastName}"`);
+      }
+
+      if (phone && !phoneNumber) {
+        phoneNumber = phone;
+        console.log(`   Mapped 'phone' to phoneNumber="${phoneNumber}"`);
+      }
+
+      const avatarPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+      const user = await userService.updateUser(currentUser.id, {
+        firstName,
+        lastName,
+        phoneNumber,
+        ...(avatarPath && { avatar: avatarPath }),
+      });
+
+      console.log(` [AUTH] User profile updated successfully`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        data: {
+          user: {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+            createdAt: user.createdAt,
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCurrentUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const currentUser = (req as any).user;
+
+      console.log(` [AUTH] Fetching current user profile: ${currentUser.id}`);
+
+      const user = await userService.getUserById(currentUser.id);
+      if (!user) {
+        throw new HttpError(404, 'User not found');
+      }
+
+      console.log(` [AUTH] Current user profile fetched successfully`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'User profile retrieved successfully',
+        data: {
+          user: {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            avatar: user.avatar,
+            phoneNumber: user.phoneNumber,
+            isEmailVerified: user.isEmailVerified,
+            createdAt: user.createdAt,
+          },
+        },
       });
     } catch (error) {
       next(error);
@@ -271,18 +381,11 @@ export class AuthController {
         throw new HttpError(401, 'Refresh token has expired');
       }
 
-      // Generate new access and refresh tokens
-      const { accessToken, refreshToken: newRefreshToken, accessTokenExpiresIn, refreshTokenExpiresIn } = generateTokens({
+      // Generate new access token
+      const { accessToken, accessTokenExpiresIn } = generateTokens({
         id: user._id.toString(),
         email: user.email,
         role: user.role,
-      });
-
-      // Store new refresh token in database
-      const refreshTokenExpiresAt = getRefreshTokenExpiryDate();
-      await userService.updateUser(user._id.toString(), {
-        refreshToken: newRefreshToken,
-        refreshTokenExpiresAt,
       });
 
       return res.status(200).json({
@@ -291,13 +394,154 @@ export class AuthController {
         data: {
           tokens: {
             accessToken,
-            refreshToken: newRefreshToken,
             accessTokenExpiresIn,
-            refreshTokenExpiresIn,
           },
         },
       });
     } catch (error) {
+      next(error);
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body;
+
+      // Verify email exists
+      const user = await userService.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if email exists for security
+        console.warn(`  [AUTH] Forgot password request for non-existent email: ${email}`);
+        return res.status(200).json({
+          success: true,
+          message: 'If an account exists with this email, an OTP will be sent shortly.'
+        });
+      }
+
+      // Generate OTP
+      const { generateOtp, hashOtp } = await import('../utils/otp');
+      const otp = generateOtp();
+      const hashedOtp = await hashOtp(otp);
+
+      // Set OTP expiration time (10 minutes from now)
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+      // Update user with OTP
+      await userService.updateUser(user._id.toString(), {
+        resetPassword: {
+          otpHash: hashedOtp,
+          expiresAt,
+          verified: false
+        }
+      });
+
+      // Send OTP via email
+      const { sendOtpEmail } = await import('../utils/mail');
+      await sendOtpEmail(email, otp);
+
+      console.log(` [AUTH] OTP sent successfully to ${email}`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with this email, an OTP will be sent shortly.'
+      });
+    } catch (error) {
+      console.error(' [AUTH] Forgot password error:', error);
+      next(error);
+    }
+  }
+
+  async verifyOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, otp } = req.body;
+
+      // Get user
+      const user = await userService.getUserByEmail(email);
+      if (!user) {
+        throw new HttpError(401, 'Invalid email or OTP');
+      }
+
+      // Check if OTP exists and is not expired
+      if (!user.resetPassword?.otpHash || !user.resetPassword?.expiresAt) {
+        throw new HttpError(401, 'No OTP found. Please request a new one.');
+      }
+
+      const { isOtpExpired, verifyOtp } = await import('../utils/otp');
+      
+      // Check if OTP is expired
+      if (isOtpExpired(user.resetPassword.expiresAt)) {
+        throw new HttpError(401, 'OTP has expired. Please request a new one.');
+      }
+
+      // Verify OTP
+      const isOtpValid = await verifyOtp(otp, user.resetPassword.otpHash);
+      if (!isOtpValid) {
+        throw new HttpError(401, 'Invalid OTP. Please try again.');
+      }
+
+      // Mark OTP as verified
+      await userService.updateUser(user._id.toString(), {
+        resetPassword: {
+          ...user.resetPassword,
+          verified: true
+        }
+      });
+
+      console.log(` [AUTH] OTP verified successfully for ${email}`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'OTP verified successfully. You can now reset your password.',
+        data: {
+          verified: true
+        }
+      });
+    } catch (error) {
+      console.error(' [AUTH] Verify OTP error:', error);
+      next(error);
+    }
+  }
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, newPassword } = req.body;
+
+      // Get user
+      const user = await userService.getUserByEmail(email);
+      if (!user) {
+        throw new HttpError(401, 'Invalid email');
+      }
+
+      // Check if OTP is verified
+      if (!user.resetPassword?.verified) {
+        throw new HttpError(401, 'Please verify OTP first before resetting password.');
+      }
+
+      // Update password
+      const { hash } = await import('bcryptjs');
+      const hashedPassword = await hash(newPassword, 10);
+
+      await userService.updateUser(user._id.toString(), {
+        password: hashedPassword,
+        resetPassword: {
+          otpHash: null,
+          expiresAt: null,
+          verified: false
+        }
+      });
+
+      // Send confirmation email
+      const { sendPasswordResetConfirmation } = await import('../utils/mail');
+      await sendPasswordResetConfirmation(email);
+
+      console.log(` [AUTH] Password reset successfully for ${email}`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password reset successfully. You can now log in with your new password.'
+      });
+    } catch (error) {
+      console.error(' [AUTH] Reset password error:', error);
       next(error);
     }
   }

@@ -1,8 +1,8 @@
 /**
  * DEPRECATED: This file is maintained for backwards compatibility only.
  * 
- * ⚠️  DO NOT USE THIS FILE IN NEW CODE
- * 
+ *   DO NOT USE THIS FILE IN NEW CODE
+ *
  * All new code should import directly from:
  *   import axiosInstance from '@/lib/api/axios';
  * 

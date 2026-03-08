@@ -1,9 +1,7 @@
 import { ShipmentRepository } from '../repositories/shipment.repository';
-import { RiderRepository } from '../repositories/rider.repository';
 import { UserRepository } from '../repositories/user.repository';
 
 const shipmentRepository = new ShipmentRepository();
-const riderRepository = new RiderRepository();
 const userRepository = new UserRepository();
 
 export class AdminService {
@@ -12,7 +10,7 @@ export class AdminService {
     const shipmentStats = await shipmentRepository.getStats();
     
     // Get rider stats
-    const riderStats = await riderRepository.getStats();
+    const riderStats = await userRepository.getRiderStats();
     
     // Get total revenue
     const totalRevenue = await shipmentRepository.getTotalRevenue();

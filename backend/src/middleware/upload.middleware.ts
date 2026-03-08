@@ -21,15 +21,23 @@ const storage = multer.diskStorage({
 
 // File filter - only images
 const fileFilter = (req: any, file: any, cb: any) => {
-  const allowedTypes = /jpeg|jpg|png|gif/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
-
-  if (mimetype && extname) {
+  // Check by MIME type first (more reliable)
+  const imageRegex = /^image\/(jpeg|jpg|png|gif|webp)$/i;
+  if (imageRegex.test(file.mimetype)) {
     return cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed (jpeg, jpg, png, gif)'));
   }
+  
+  // Fallback: check by file extension
+  const allowedExtensions = /\.(jpeg|jpg|png|gif|webp)$/i;
+  if (allowedExtensions.test(file.originalname)) {
+    return cb(null, true);
+  }
+
+  // Log details for debugging
+  console.log(
+    ` [UPLOAD] File validation failed - MIME: ${file.mimetype}, Filename: ${file.originalname}`,
+  );
+  cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'));
 };
 
 export const upload = multer({

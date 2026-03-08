@@ -47,16 +47,16 @@ export default function VerticalTimeline({
     if (customIcon) return customIcon;
 
     const iconMap: { [key: string]: string } = {
-      CREATED: '📦',
-      ASSIGNED: '🎯',
-      PICKED: '✅',
-      IN_TRANSIT: '🚚',
-      OUT_FOR_DELIVERY: '🚲',
-      DELIVERED: '✅',
-      FAILED: '❌',
-      CANCELLED: '🛑',
+      CREATED: '',
+      ASSIGNED: '',
+      PICKED: '',
+      IN_TRANSIT: '',
+      OUT_FOR_DELIVERY: '',
+      DELIVERED: '',
+      FAILED: '',
+      CANCELLED: '',
     };
-    return iconMap[status] || '📍';
+    return iconMap[status] || '';
   };
 
   const getCircleSize = (isCurrent?: boolean): string => {
@@ -154,12 +154,12 @@ export default function VerticalTimeline({
                     )}
                     {step.location && (
                       <p className="text-xs text-gray-500 mt-1 flex items-center gap-1 justify-end">
-                        📍 {step.location}
+                         {step.location}
                       </p>
                     )}
                     {step.timestamp && (
                       <p className="text-xs text-gray-400 mt-1">
-                        🕐 {new Date(step.timestamp).toLocaleString()}
+                         {new Date(step.timestamp).toLocaleString()}
                       </p>
                     )}
                   </div>
@@ -214,12 +214,12 @@ export default function VerticalTimeline({
                     )}
                     {step.location && (
                       <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                        📍 {step.location}
+                         {step.location}
                       </p>
                     )}
                     {step.timestamp && (
                       <p className="text-xs text-gray-400 mt-1">
-                        🕐 {new Date(step.timestamp).toLocaleString()}
+                         {new Date(step.timestamp).toLocaleString()}
                       </p>
                     )}
                   </div>
@@ -251,7 +251,7 @@ export default function VerticalTimeline({
                         )}
                         {step.timestamp && (
                           <p className="text-xs text-gray-400 mt-1">
-                            🕐 {new Date(step.timestamp).toLocaleString()}
+                             {new Date(step.timestamp).toLocaleString()}
                           </p>
                         )}
                       </div>
@@ -299,11 +299,11 @@ export default function VerticalTimeline({
                           <p className="text-sm text-gray-600 mt-1">{step.description}</p>
                         )}
                         {step.location && (
-                          <p className="text-xs text-gray-500 mt-1">📍 {step.location}</p>
+                          <p className="text-xs text-gray-500 mt-1"> {step.location}</p>
                         )}
                         {step.timestamp && (
                           <p className="text-xs text-gray-400 mt-1">
-                            🕐 {new Date(step.timestamp).toLocaleString()}
+                             {new Date(step.timestamp).toLocaleString()}
                           </p>
                         )}
                       </div>

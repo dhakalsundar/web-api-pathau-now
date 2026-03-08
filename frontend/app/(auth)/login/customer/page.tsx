@@ -31,7 +31,7 @@ export default function CustomerLoginPage() {
       
       // Verify user is CUSTOMER
       if (user.role !== 'CUSTOMER') {
-        setError('❌ This account is not a customer account. Please use the correct login.');
+        setError(' This account is not a customer account. Please use the correct login.');
         setLoading(false);
         return;
       }
@@ -55,7 +55,7 @@ export default function CustomerLoginPage() {
             {/* Header */}
             <div className="mb-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-2xl">👤</span>
+                <span className="text-white font-bold text-2xl"></span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
               <p className="text-gray-600 mt-2">Sign in to book and track shipments</p>
@@ -84,7 +84,12 @@ export default function CustomerLoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-gray-700">Password</label>
+                  <Link href="/forgot-password" className="text-sm text-amber-600 hover:text-amber-700 font-semibold">
+                    Forgot password?
+                  </Link>
+                </div>
                 <input
                   type="password"
                   name="password"
@@ -101,7 +106,7 @@ export default function CustomerLoginPage() {
                 disabled={loading}
                 className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
-                {loading ? '⏳ Signing in...' : '📦 Sign In'}
+                {loading ? ' Signing in...' : ' Sign In'}
               </button>
             </form>
 

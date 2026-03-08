@@ -52,7 +52,7 @@ export const createShipmentSchema = z.object({
 });
 
 export const updateShipmentStatusSchema = z.object({
-  status: z.enum(['PENDING', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED', 'CANCELLED']),
+  status: z.enum(['PENDING', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED', 'CANCELLED']),
   message: z.string().optional(),
   location: z.string().optional(),
 });

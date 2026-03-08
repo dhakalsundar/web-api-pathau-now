@@ -7,9 +7,6 @@
 
 import { logger } from './logger';
 
-// ============================================================================
-// EXAMPLE 1: Service Layer Logging
-// ============================================================================
 
 class UserService {
   async createUser(email: string, password: string) {
@@ -47,9 +44,6 @@ class UserService {
   }
 }
 
-// ============================================================================
-// EXAMPLE 2: Controller Layer Logging
-// ============================================================================
 
 class AuthController {
   async login(email: string, password: string) {
@@ -60,10 +54,10 @@ class AuthController {
       logger.debug(`Validating credentials for ${email}`);
       // ... auth logic
 
-      logger.info(`✅ Login successful for user: ${email}`);
+      logger.info(` Login successful for user: ${email}`);
       return { token: 'jwt-token', user: { id: '123', email } };
     } catch (error) {
-      logger.error(`❌ Login failed for user ${email}: ${error}`);
+      logger.error(` Login failed for user ${email}: ${error}`);
       throw error;
     }
   }
@@ -76,16 +70,13 @@ class AuthController {
       logger.debug(`Checking email availability: ${userData.email}`);
       
       // Create user
-      logger.info(`✅ User ${userData.email} registered successfully`);
+      logger.info(` User ${userData.email} registered successfully`);
     } catch (error) {
-      logger.error(`❌ Registration failed: ${error}`, { email: userData.email });
+      logger.error(` Registration failed: ${error}`, { email: userData.email });
     }
   }
 }
 
-// ============================================================================
-// EXAMPLE 3: Repository Layer Logging
-// ============================================================================
 
 class UserRepository {
   async findById(userId: string) {
@@ -102,9 +93,6 @@ class UserRepository {
   }
 }
 
-// ============================================================================
-// EXAMPLE 4: Middleware Logging
-// ============================================================================
 
 const authMiddleware = (req: any, res: any, next: any) => {
   const token = req.headers.authorization;
@@ -118,9 +106,6 @@ const authMiddleware = (req: any, res: any, next: any) => {
   next();
 };
 
-// ============================================================================
-// EXAMPLE 5: Error Handling with Logging
-// ============================================================================
 
 class ShipmentService {
   async assignShipment(shipmentId: string, riderId: string) {
@@ -137,7 +122,7 @@ class ShipmentService {
       logger.debug(`Checking rider ${riderId} status`);
       
       // Perform assignment
-      logger.info(`✅ Shipment ${shipmentId} assigned to rider ${riderId}`);
+      logger.info(` Shipment ${shipmentId} assigned to rider ${riderId}`);
       
       return { success: true };
     } catch (error) {
@@ -151,9 +136,6 @@ class ShipmentService {
   }
 }
 
-// ============================================================================
-// EXAMPLE 6: Database Operations Logging
-// ============================================================================
 
 class DatabaseConnection {
   async connect() {
@@ -161,20 +143,17 @@ class DatabaseConnection {
     
     try {
       // Connection logic
-      logger.info('✅ Database connection established');
+      logger.info(' Database connection established');
     } catch (error) {
-      logger.error('❌ Failed to connect to database:', error);
+      logger.error(' Failed to connect to database:', error);
       
       // Fallback to in-memory DB
       logger.warn('Attempting in-memory database fallback...');
-      logger.info('✅ Connected to in-memory database');
+      logger.info(' Connected to in-memory database');
     }
   }
 }
 
-// ============================================================================
-// EXAMPLE 7: Performance Logging
-// ============================================================================
 
 const measurePerformance = async (operationName: string, fn: () => Promise<any>) => {
   const startTime = Date.now();
@@ -184,23 +163,15 @@ const measurePerformance = async (operationName: string, fn: () => Promise<any>)
     const result = await fn();
     const duration = Date.now() - startTime;
     
-    logger.info(`✅ ${operationName} completed in ${duration}ms`);
+    logger.info(` ${operationName} completed in ${duration}ms`);
     return result;
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.error(`❌ ${operationName} failed after ${duration}ms: ${error}`);
+    logger.error(` ${operationName} failed after ${duration}ms: ${error}`);
     throw error;
   }
 };
 
-// Usage:
-// await measurePerformance('Fetch all users', async () => {
-//   return await userRepository.findAll();
-// });
-
-// ============================================================================
-// EXAMPLE 8: Structured Logging with Context
-// ============================================================================
 
 class TransactionService {
   async processPayment(orderId: string, amount: number, userId: string) {
@@ -216,7 +187,7 @@ class TransactionService {
       logger.info('Charging customer', context);
       
       // Confirm transaction
-      logger.info('✅ Payment processed successfully', {
+      logger.info(' Payment processed successfully', {
         ...context,
         transactionId: 'TXN-123-456',
       });
@@ -229,9 +200,6 @@ class TransactionService {
   }
 }
 
-// ============================================================================
-// LOG LEVELS GUIDE
-// ============================================================================
 
 const levelExamples = {
   // Use ERROR for exceptional conditions that need immediate attention
@@ -247,25 +215,5 @@ const levelExamples = {
   debug: () => logger.debug('SQL Query: SELECT * FROM users WHERE id = ?'),
 };
 
-// ============================================================================
-// AUTOMATIC HTTP REQUEST LOGGING
-// ============================================================================
-
-/*
-The requestLogger middleware automatically logs all HTTP requests with format:
-
-  [timestamp] [level]: [METHOD] [URL] - [STATUS_CODE] - [DURATION]ms
-
-Example output:
-  2026-02-14 15:30:45 [info]: GET /api/shipments - 200 - 52ms
-  2026-02-14 15:30:46 [warn]: POST /api/auth/login - 401 - 124ms
-  2026-02-14 15:30:47 [error]: DELETE /api/users/123 - 500 - 8ms
-
-Status codes determine log level:
-  - 5xx errors → logger.error()
-  - 4xx errors → logger.error()
-  - 2xx/3xx success → logger.info()
-  - Other → logger.warn()
-*/
 
 export { UserService, AuthController, measurePerformance };

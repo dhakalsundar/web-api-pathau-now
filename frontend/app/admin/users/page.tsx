@@ -27,13 +27,6 @@ export default function AdminUsersPage() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-          router.push('/admin/login');
-          return;
-        }
-
         // Fetch users with pagination
         const response = await adminService.getAllUsers({
           page,
@@ -41,11 +34,9 @@ export default function AdminUsersPage() {
           search: searchTerm || undefined,
           role: roleFilter || undefined,
         });
-
         // Handle response data structure
         const usersData = response.data?.users || response.data?.data || [];
         const total = response.data?.total || response.pagination?.total || 0;
-        
         setUsers(Array.isArray(usersData) ? usersData : []);
         setTotalUsers(total);
         setError('');
@@ -62,7 +53,6 @@ export default function AdminUsersPage() {
         setLoading(false);
       }
     };
-
     fetchUsers();
   }, [router, searchTerm, roleFilter, page, limit]);
 
@@ -102,7 +92,7 @@ export default function AdminUsersPage() {
   };
 
   const getStatusBadge = (isActive: boolean) => {
-    return isActive ? '✅ Active' : '❌ Inactive';
+    return isActive ? ' Active' : ' Inactive';
   };
 
   const formatDate = (date: string) => {
@@ -146,13 +136,13 @@ export default function AdminUsersPage() {
           href="/admin/users/create"
           className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold"
         >
-          ➕ Create User
+           Create User
         </Link>
       </div>
 
       {error && (
         <div className="mb-6 bg-red-50 border-2 border-red-300 rounded-lg p-4 text-red-700 font-semibold">
-          ❌ {error}
+          {error}
         </div>
       )}
 
@@ -247,7 +237,7 @@ export default function AdminUsersPage() {
         cancelText="Cancel"
         isDangerous={true}
         isLoading={deleteLoading}
-        icon="⚠️"
+        icon=""
         onConfirm={handleDeleteUser}
         onCancel={() => {
           setShowDeleteConfirm(false);

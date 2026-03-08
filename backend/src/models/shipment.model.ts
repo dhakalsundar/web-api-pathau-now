@@ -23,10 +23,11 @@ export interface IRecipient {
 
 export interface IShipment extends Document {
   trackingNumber: string;
-  status: 'PENDING' | 'PICKED_UP' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'FAILED' | 'CANCELLED';
+  status: 'PENDING' | 'ASSIGNED' | 'PICKED_UP' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'FAILED' | 'CANCELLED';
   sender: ISender;
   recipient: IRecipient;
   riderId?: mongoose.Types.ObjectId;
+  riderUserId?: mongoose.Types.ObjectId; // User._id of the rider who accepted this
   customerId?: mongoose.Types.ObjectId;
   weight?: number;
   price?: number;
@@ -36,6 +37,22 @@ export interface IShipment extends Document {
   courier?: string;
   notes?: string;
   events: IShipmentEvent[];
+  senderLocation?: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+    address?: string;
+  };
+  recipientLocation?: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+    address?: string;
+  };
+  riderLocation?: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+    address?: string;
+    updatedAt?: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,12 +93,49 @@ const ShipmentSchema: Schema = new Schema(
     status: { 
       type: String, 
       required: true, 
-      enum: ['PENDING', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED', 'CANCELLED'],
+      enum: ['PENDING', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED', 'CANCELLED'],
       default: 'PENDING'
     },
     sender: { type: SenderSchema, required: true },
+    senderLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: '2dsphere',
+      },
+      address: { type: String },
+    },
     recipient: { type: RecipientSchema, required: true },
-    riderId: { type: Schema.Types.ObjectId, ref: 'Rider' },
+    recipientLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: '2dsphere',
+      },
+      address: { type: String },
+    },
+    riderLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: '2dsphere',
+      },
+      address: { type: String },
+      updatedAt: { type: Date },
+    },
+    riderUserId: { type: Schema.Types.ObjectId, ref: 'User' }, // User._id of the rider who accepted this
     customerId: { type: Schema.Types.ObjectId, ref: 'User' },
     weight: { type: Number },
     price: { type: Number },
@@ -112,7 +166,7 @@ const ShipmentSchema: Schema = new Schema(
 // Indexes for fast search
 ShipmentSchema.index({ trackingNumber: 'text', 'recipient.name': 'text', 'sender.name': 'text' });
 ShipmentSchema.index({ status: 1 });
-ShipmentSchema.index({ riderId: 1 });
+ShipmentSchema.index({ riderUserId: 1 });
 ShipmentSchema.index({ customerId: 1 });
 ShipmentSchema.index({ createdAt: -1 });
 

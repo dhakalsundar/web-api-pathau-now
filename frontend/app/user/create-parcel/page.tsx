@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { shipmentService } from '@/app/lib/services';
+import { parcelService } from '@/app/lib/services';
+import { getUserDetails } from '@/lib/cookies';
 
 export default function CreateParcelPage() {
   const router = useRouter();
@@ -17,6 +19,8 @@ export default function CreateParcelPage() {
     senderAddress: '',
     senderPhone: '',
     senderEmail: '',
+    senderLatitude: null,
+    senderLongitude: null,
     recipientName: '',
     recipientAddress: '',
     recipientPhone: '',
@@ -25,18 +29,19 @@ export default function CreateParcelPage() {
     price: '',
     parcelType: 'PARCEL',
     deliveryType: 'STANDARD',
+      status:"PENDING",
   });
 
   useEffect(() => {
     // Pre-fill sender with logged-in user info if available
-    const userData = localStorage.getItem('user');
+    const userData = getUserDetails();
     if (userData) {
       try {
-        const user = JSON.parse(userData);
+        const senderName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || '';
         setFormData((prev) => ({
           ...prev,
-          senderName: user.name || '',
-          senderEmail: user.email || '',
+          senderName: senderName,
+          senderEmail: userData.email || '',
         }));
       } catch (error) {
         console.error('Failed to parse user data:', error);
@@ -103,7 +108,7 @@ export default function CreateParcelPage() {
         deliveryType: formData.deliveryType,
       };
 
-      const response = await shipmentService.createShipment(payload);
+      const response = await parcelService.createParcel(payload);
 
       if (response.data) {
         setNewTrackingId(response.data.trackingNumber);
@@ -115,25 +120,29 @@ export default function CreateParcelPage() {
           senderAddress: '',
           senderPhone: '',
           senderEmail: '',
+          senderLatitude: null,
+          senderLongitude: null,
           recipientName: '',
           recipientAddress: '',
           recipientPhone: '',
           recipientEmail: '',
           weight: '',
           price: '',
+ 
+          status:"PENDING",
           parcelType: 'PARCEL',
           deliveryType: 'STANDARD',
         });
 
         // Recover sender info
-        const userData = localStorage.getItem('user');
+        const userData = getUserDetails();
         if (userData) {
           try {
-            const user = JSON.parse(userData);
+            const senderName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || '';
             setFormData((prev) => ({
               ...prev,
-              senderName: user.name || '',
-              senderEmail: user.email || '',
+              senderName: senderName,
+              senderEmail: userData.email || '',
             }));
           } catch (e) {
             console.error('Failed to recover user data:', e);
@@ -162,25 +171,25 @@ export default function CreateParcelPage() {
 
       {error && (
         <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p className="text-red-700 font-medium">❌ {error}</p>
+          <p className="text-red-700 font-medium">{error}</p>
         </div>
       )}
 
       {success && (
         <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
-          <p className="text-green-700 font-medium">✅ {success}</p>
+          <p className="text-green-700 font-medium"> {success}</p>
           <div className="mt-4 flex gap-3">
             <Link
               href={`/user/track?id=${newTrackingId}`}
               className="inline-block px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition font-semibold"
             >
-              🔍 Track This Parcel
+               Track This Parcel
             </Link>
             <Link
               href="/user/parcels"
               className="inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition font-semibold"
             >
-              📋 View My Parcels
+               View My Parcels
             </Link>
           </div>
         </div>
@@ -189,8 +198,7 @@ export default function CreateParcelPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Sender Info */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">📤 From (Sender Information)</h2>
-
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"> From (Sender Information)</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -206,7 +214,6 @@ export default function CreateParcelPage() {
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Phone Number <span className="text-red-500">*</span>
@@ -221,7 +228,6 @@ export default function CreateParcelPage() {
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address <span className="text-gray-500">(Optional)</span>
@@ -235,7 +241,6 @@ export default function CreateParcelPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
-
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Address <span className="text-red-500">*</span>
@@ -255,7 +260,7 @@ export default function CreateParcelPage() {
 
         {/* Recipient Info */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">📥 To (Recipient Information)</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"> To (Recipient Information)</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -321,7 +326,7 @@ export default function CreateParcelPage() {
 
         {/* Parcel Details */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">📦 Parcel Details</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"> Parcel Details</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -334,12 +339,12 @@ export default function CreateParcelPage() {
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
-                <option value="PARCEL">📦 Parcel</option>
-                <option value="DOCUMENT">📄 Document</option>
-                <option value="FOOD">🍱 Food</option>
-                <option value="FRAGILE">🥚 Fragile</option>
-                <option value="HEAVY">💪 Heavy</option>
-                <option value="OTHER">❓ Other</option>
+                <option value="PARCEL"> Parcel</option>
+                <option value="DOCUMENT"> Document</option>
+                <option value="FOOD"> Food</option>
+                <option value="FRAGILE"> Fragile</option>
+                <option value="HEAVY"> Heavy</option>
+                <option value="OTHER"> Other</option>
               </select>
             </div>
 
@@ -353,9 +358,9 @@ export default function CreateParcelPage() {
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
-                <option value="STANDARD">🚚 Standard (3-5 days)</option>
-                <option value="EXPRESS">⚡ Express (1-2 days)</option>
-                <option value="SAME_DAY">🏃 Same Day</option>
+                <option value="STANDARD"> Standard (3-5 days)</option>
+                <option value="EXPRESS"> Express (1-2 days)</option>
+                <option value="SAME_DAY"> Same Day</option>
               </select>
             </div>
 
@@ -378,7 +383,7 @@ export default function CreateParcelPage() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Price (৳) <span className="text-red-500">*</span>
+                Price (Rs) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -402,7 +407,7 @@ export default function CreateParcelPage() {
             disabled={loading}
             className="flex-1 px-8 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-semibold disabled:bg-gray-400"
           >
-            {loading ? '⏳ Creating...' : '✓ Create Parcel'}
+            {loading ? ' Creating...' : ' Create Parcel'}
           </button>
           <Link
             href="/user/dashboard"

@@ -10,9 +10,6 @@
 import { withRoleProtection, withAdminProtection, withRiderProtection, withCustomerProtection, withAuthProtection } from '@/app/hoc/withRoleProtection';
 import { useAuth } from '@/app/context/AuthContext';
 
-// ============================================================================
-// EXAMPLE 1: Admin Dashboard
-// ============================================================================
 
 function AdminDashboard() {
   const { user, role } = useAuth();
@@ -43,7 +40,7 @@ function AdminDashboard() {
 
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <p className="text-sm text-amber-800">
-          ℹ️ This page is protected for <strong>ADMIN</strong> role only.
+          This page is protected for <strong>ADMIN</strong> role only.
           If another user visits, they'll be redirected to home.
         </p>
       </div>
@@ -53,9 +50,6 @@ function AdminDashboard() {
 
 export const AdminDashboardExample = withAdminProtection(AdminDashboard);
 
-// ============================================================================
-// EXAMPLE 2: Rider Dashboard
-// ============================================================================
 
 function RiderDashboard() {
   const { user } = useAuth();
@@ -78,13 +72,13 @@ function RiderDashboard() {
 
         <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-6 rounded-lg border border-amber-200">
           <p className="text-gray-600 text-sm font-semibold">EARNINGS TODAY</p>
-          <p className="text-4xl font-bold text-amber-600 mt-2">৳ 2,400</p>
+          <p className="text-4xl font-bold text-amber-600 mt-2">Rs 2,400</p>
         </div>
       </div>
 
       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-6">
         <p className="text-sm text-purple-800">
-          ℹ️ This page is protected for <strong>RIDER</strong> role only.
+          This page is protected for <strong>RIDER</strong> role only.
         </p>
       </div>
     </div>
@@ -93,9 +87,6 @@ function RiderDashboard() {
 
 export const RiderDashboardExample = withRiderProtection(RiderDashboard);
 
-// ============================================================================
-// EXAMPLE 3: Customer Profile (Any Authenticated User)
-// ============================================================================
 
 function UserProfile() {
   const { user, logout } = useAuth();
@@ -152,7 +143,7 @@ function UserProfile() {
 
       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
         <p className="text-sm text-green-800">
-          ℹ️ This page is protected for any <strong>authenticated user</strong>.
+           This page is protected for any <strong>authenticated user</strong>.
           Works for ADMIN, RIDER, CUSTOMER, STAFF roles.
         </p>
       </div>
@@ -162,9 +153,6 @@ function UserProfile() {
 
 export const UserProfileExample = withAuthProtection(UserProfile);
 
-// ============================================================================
-// EXAMPLE 4: Multi-Role Component (Admin OR Staff)
-// ============================================================================
 
 function ReportsPage() {
   const { user, role } = useAuth();
@@ -179,7 +167,7 @@ function ReportsPage() {
 
       {isAdmin && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-blue-800 font-semibold">👑 Admin Features</p>
+          <p className="text-blue-800 font-semibold"> Admin Features</p>
           <ul className="text-blue-700 text-sm mt-2">
             <li>✓ View all system analytics</li>
             <li>✓ Download raw data</li>
@@ -190,7 +178,7 @@ function ReportsPage() {
 
       {isStaff && (
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-          <p className="text-purple-800 font-semibold">📊 Staff Features</p>
+          <p className="text-purple-800 font-semibold"> Staff Features</p>
           <ul className="text-purple-700 text-sm mt-2">
             <li>✓ View assigned reports</li>
             <li>✓ Generate monthly summaries</li>
@@ -200,7 +188,7 @@ function ReportsPage() {
 
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <p className="text-sm text-yellow-800">
-          ℹ️ This page allows both <strong>ADMIN</strong> and <strong>STAFF</strong> roles.
+          This page allows both <strong>ADMIN</strong> and <strong>STAFF</strong> roles.
           Non-matching roles get redirected to home.
         </p>
       </div>
@@ -213,9 +201,6 @@ export const ReportsPageExample = withRoleProtection(ReportsPage, {
   redirectTo: '/', // Default but explicit
 });
 
-// ============================================================================
-// EXAMPLE 5: Conditional Logout Button (Works Everywhere)
-// ============================================================================
 
 function LogoutButton() {
   const { logout } = useAuth();
@@ -242,9 +227,6 @@ function LogoutButton() {
 // This doesn't need protection - it just needs useAuth
 export const LogoutButtonComponent = LogoutButton;
 
-// ============================================================================
-// EXAMPLE 6: How to Use in Your Files
-// ============================================================================
 
 /**
  * USAGE IN: app/admin/dashboard/page.tsx

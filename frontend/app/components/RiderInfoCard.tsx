@@ -27,7 +27,7 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
   if (!rider) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">🎯 Rider Information</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4"> Rider Information</h3>
         <p className="text-gray-500 text-center py-6">No rider assigned yet</p>
       </div>
     );
@@ -40,9 +40,9 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
   };
 
   const statusEmojis: { [key: string]: string } = {
-    AVAILABLE: '✅',
-    BUSY: '🚗',
-    OFFLINE: '⚠️',
+    AVAILABLE: '',
+    BUSY: '',
+    OFFLINE: '',
   };
 
   return (
@@ -50,7 +50,7 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
         <h3 className="text-lg font-bold flex items-center gap-2">
-          <span>🎯</span> Rider Information
+          <span></span> Rider Information
         </h3>
       </div>
 
@@ -67,7 +67,7 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              <span>🚚</span>
+              <span></span>
             )}
           </div>
 
@@ -91,7 +91,7 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
             {/* Rating */}
             {rider.rating && (
               <div className="mt-2 flex items-center gap-1">
-                <span className="text-yellow-500">⭐</span>
+                <span className="text-yellow-500"></span>
                 <span className="font-semibold text-gray-900">{rider.rating.toFixed(1)}</span>
                 <span className="text-gray-600">rating</span>
               </div>
@@ -105,7 +105,7 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
 
           {rider.phone && (
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">📞 Phone</span>
+              <span className="text-gray-600"> Phone</span>
               <a
                 href={`tel:${rider.phone}`}
                 className="font-semibold text-blue-600 hover:text-blue-700 underline"
@@ -134,14 +134,14 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
 
           {rider.vehicleType && (
             <div className="flex justify-between">
-              <span className="text-gray-600">🚙 Vehicle Type</span>
+              <span className="text-gray-600"> Vehicle Type</span>
               <span className="font-semibold text-gray-900">{rider.vehicleType}</span>
             </div>
           )}
 
           {rider.vehicleNumber && (
             <div className="flex justify-between">
-              <span className="text-gray-600">🔢 Registration</span>
+              <span className="text-gray-600"> Registration</span>
               <span className="font-semibold text-gray-900">{rider.vehicleNumber}</span>
             </div>
           )}
@@ -153,14 +153,14 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
 
           {rider.totalDeliveries && (
             <div className="flex justify-between">
-              <span className="text-gray-600">📦 Total Deliveries</span>
+              <span className="text-gray-600"> Total Deliveries</span>
               <span className="font-semibold text-gray-900">{rider.totalDeliveries}</span>
             </div>
           )}
 
           {rider.currentLocation && (
             <div className="flex justify-between">
-              <span className="text-gray-600">📍 Current Location</span>
+              <span className="text-gray-600"> Current Location</span>
               <span className="font-semibold text-gray-900">{rider.currentLocation}</span>
             </div>
           )}
@@ -170,7 +170,7 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
         {shipmentStatus === 'OUT_FOR_DELIVERY' && (
           <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-blue-800 text-sm">
-              📍 Your parcel is out for delivery! The rider will reach you soon. Contact the rider using the information above if needed.
+               Your parcel is out for delivery! The rider will reach you soon. Contact the rider using the information above if needed.
             </p>
           </div>
         )}
@@ -178,7 +178,7 @@ export default function RiderInfoCard({ rider, shipmentStatus }: RiderInfoCardPr
         {shipmentStatus === 'DELIVERED' && (
           <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
             <p className="text-green-800 text-sm">
-              ✅ Your parcel has been delivered by this rider. Thank you for using our service!
+               Your parcel has been delivered by this rider. Thank you for using our service!
             </p>
           </div>
         )}

@@ -138,3 +138,70 @@ export const refreshLimiter = createRateLimiter({
     });
   }
 });
+
+/**
+ * OTP Request Limiter: 5 requests per 60 minutes per email
+ * Prevents OTP spam abuse
+ */
+export const otpRequestLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000, // 60 minutes
+  max: 5,                    // 5 OTP requests per hour per email
+  message: {
+    success: false,
+    message: 'Too many OTP requests. Please try again after 1 hour.',
+  },
+  statusCode: 429,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: Request) => {
+    return false;
+  },
+  keyGenerator: (req: Request): string => {
+    // Use email from request body + IP for better tracking
+    const email = (req.body?.email || '').toLowerCase();
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    return `${email}-${ip}`;
+  },
+  handler: (req: Request, res: Response): void => {
+    res.status(429).json({
+      success: false,
+      message: 'Too many OTP requests. Please wait 1 hour before requesting again.',
+      error: {
+        statusCode: 429,
+        retryAfter: '1 hour'
+      }
+    });
+  }
+});
+
+/**
+ * OTP Verification Limiter: 10 attempts per 30 minutes per email
+ * Prevents OTP brute force
+ */
+export const otpVerifyLimiter = createRateLimiter({
+  windowMs: 30 * 60 * 1000, // 30 minutes
+  max: 10,                   // 10 verification attempts per 30 minutes
+  message: {
+    success: false,
+    message: 'Too many OTP verification attempts. Please try again after 30 minutes.',
+  },
+  statusCode: 429,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request): string => {
+    const email = (req.body?.email || '').toLowerCase();
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    return `${email}-otp-verify-${ip}`;
+  },
+  handler: (req: Request, res: Response): void => {
+    res.status(429).json({
+      success: false,
+      message: 'Too many OTP verification attempts. Please try again after 30 minutes.',
+      error: {
+        statusCode: 429,
+        retryAfter: '30 minutes'
+      }
+    });
+  }
+});
+
